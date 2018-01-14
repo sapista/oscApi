@@ -10,6 +10,8 @@ import stripselwidget
 import stripctlwidget
 import math
 import xml.etree.ElementTree as ET
+import ast
+
 
 pygtk.require('2.0')
 gobject.threads_init()  # You need to call that to avoid liblo server thread to interact with gui thread
@@ -208,12 +210,15 @@ class ControllerGUI:
 
     def __init__(self):
 
-        # Reding config data from osc_config.xml
-        tree = ET.parse('osc_config.xml')
+        # Reding config data from config.xml
+        tree = ET.parse('config.xml')
         root = tree.getroot()
-        daw_IP = root.find('daw_ip').text
-        daw_port = int(root.find('daw_port').text)
-        recv_port = int(root.find('recv_port').text)
+        osc_net = root.find('osc_net')
+        daw_IP = osc_net.find('daw_ip').text
+        daw_port = int(osc_net.find('daw_port').text)
+        recv_port = int(osc_net.find('recv_port').text)
+        misc = root.find('misc')
+        fullscreenmode = ast.literal_eval(misc.find('fullscreen').text)
 
         try:
             self.oscserver = oscserver.OSCServer(recv_port)
@@ -286,7 +291,8 @@ class ControllerGUI:
         self.window.add(self.vbox_top)
         self.window.set_size_request(1280, 800)
         self.window.show_all()
-        self.window.fullscreen()
+        if fullscreenmode:
+            self.window.fullscreen()
         self.window.show()
 
         # self.btn_play.connect("clicked", self.btn_play_clicked, None)

@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<osc_net>
-    <daw_ip>127.0.0.1</daw_ip>
-    <daw_port>3819</daw_port>
-    <recv_port>8000</recv_port>
-</osc_net>
