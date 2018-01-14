@@ -9,6 +9,7 @@ import oscserver
 import stripselwidget
 import stripctlwidget
 import math
+import xml.etree.ElementTree as ET
 
 pygtk.require('2.0')
 gobject.threads_init()  # You need to call that to avoid liblo server thread to interact with gui thread
@@ -34,6 +35,19 @@ class ControllerGUI:
         liblo.send(self.target, "/transport_stop")
 
          #def callback(range, scroll, value, arg1, arg2, user_param1, ...)
+
+    def btn_quit_clicked(selfself, widget, data=None):
+        quitDialog = gtk.MessageDialog(parent=None,
+                            flags=0,
+                            type=gtk.MESSAGE_QUESTION,
+                            buttons=gtk.BUTTONS_YES_NO,
+                            message_format=None)
+
+        quitDialog.set_markup("Are you sure to quit?")
+        resp = quitDialog.run()
+        quitDialog.destroy()
+        if resp == gtk.RESPONSE_YES:
+            gtk.main_quit()
 
     def fader_changed(self, widget, scroll, value, arg1):
         if self.test_fader_touched:
@@ -193,14 +207,22 @@ class ControllerGUI:
         print "##################################################"
 
     def __init__(self):
+
+        # Reding config data from osc_config.xml
+        tree = ET.parse('osc_config.xml')
+        root = tree.getroot()
+        daw_IP = root.find('daw_ip').text
+        daw_port = int(root.find('daw_port').text)
+        recv_port = int(root.find('recv_port').text)
+
         try:
-            self.oscserver = oscserver.OSCServer(8000)
+            self.oscserver = oscserver.OSCServer(recv_port)
         except liblo.ServerError, err:
             print str(err)
             sys.exit()
 
         try:
-            self.target = liblo.Address(3819)
+            self.target = liblo.Address(daw_IP, daw_port)
         except liblo.AddressError, err:
             print str(err)
             sys.exit()
@@ -212,9 +234,12 @@ class ControllerGUI:
         self.hbox_top = gtk.HBox()
         self.btn_refresh = gtk.Button("Refresh")
         self.btn_insert_marker_at_terminal = gtk.Button("Dbg: insert ###")
+        self.btn_quit = gtk.Button("Quit")
         self.hbox_top.pack_start(self.btn_refresh, expand=False, fill=False)
         self.hbox_top.pack_start(self.btn_insert_marker_at_terminal, expand=False, fill=False)
+        self.hbox_top.pack_end(self.btn_quit, expand=False, fill=False)
         self.vbox_top.pack_start(self.hbox_top, expand=False, fill=False)
+
 
         # Build the central part of the gui, all strips list
         self.strips_list_widgets = []
@@ -259,12 +284,14 @@ class ControllerGUI:
         self.test_fader.connect("button-release-event", self.fader_untouched, None)
 
         self.window.add(self.vbox_top)
-        self.window.set_size_request(1024, 600)
+        self.window.set_size_request(1280, 800)
         self.window.show_all()
+        self.window.fullscreen()
         self.window.show()
 
         # self.btn_play.connect("clicked", self.btn_play_clicked, None)
         # self.btn_stop.connect("clicked", self.btn_stop_clicked, None)
+        self.btn_quit.connect("clicked", self.btn_quit_clicked, None)
 
         self.btn_refresh.connect("clicked", self.refresh_strip_list, None)
         self.btn_insert_marker_at_terminal.connect("clicked", self.dbg_insert_marker_line, None)
