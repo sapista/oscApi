@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/py8Control.iml" filepath="$PROJECT_DIR$/.idea/py8Control.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pySAPTouch.iml" filepath="$PROJECT_DIR$/.idea/pySAPTouch.iml" />
     </modules>
   </component>
 </project>
