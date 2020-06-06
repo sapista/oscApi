@@ -271,6 +271,7 @@ class ControllerGUI(Gtk.Window):
         misc = root.find('misc')
         window_width = int(misc.find('window_width').text)
         window_height = int(misc.find('window_height').text)
+        window_maximize = ast.literal_eval(misc.find('window_maximize').text)
         self.PIXELS_X_SECOND = int(misc.find('meter_waveform_speed').text)
 
         try:
@@ -356,7 +357,6 @@ class ControllerGUI(Gtk.Window):
         self.avrCOM.connect("fader_changed", self.fader_moved)
         self.avrCOM.connect("fader_untouched", self.fader_untouched)
 
-        self.set_resizable(False)
         self.set_default_size(window_width, window_height)
         self.show_all()
 
@@ -398,6 +398,10 @@ class ControllerGUI(Gtk.Window):
 
         context = Gtk.StyleContext()
         context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
+        #MAximize
+        if window_maximize:
+            self.maximize()
 
     def main(self):
         self.oscserver.start()

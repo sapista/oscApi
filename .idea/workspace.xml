@@ -2,29 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/LEDWidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/customframewidget.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icons/loop.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icons/loopGreen.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icons/loopWhite.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icons/play_pauseGreen.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icons/play_pauseWhite.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icons/play_pause_icon.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icons/reload_32.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/miniMeter.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pyFaderSerialCOM.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/saptouch_theme.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stripTypes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/py8Control.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/py8Control.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/config.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/oscrecvdsignals.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscrecvdsignals.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simplebuttonwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/simplebuttonwidget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stripctlwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripctlwidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,35 +81,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <module name="pySAPTouch" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Doctests">
-      <module name="pySAPTouch" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="tests" factoryName="Unittests">
       <module name="pySAPTouch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -194,38 +147,38 @@
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="2663" y="283" key="FileChooserDialogImpl/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1590669205604" />
-    <state width="1897" height="273" key="GridCell.Tab.0.bottom" timestamp="1591360854367">
+    <state width="1897" height="273" key="GridCell.Tab.0.bottom" timestamp="1591444422697">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591360854367" />
-    <state width="1897" height="273" key="GridCell.Tab.0.center" timestamp="1591360854367">
+    <state width="1897" height="273" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591444422697" />
+    <state width="1897" height="273" key="GridCell.Tab.0.center" timestamp="1591444422697">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591360854367" />
-    <state width="1897" height="273" key="GridCell.Tab.0.left" timestamp="1591360854367">
+    <state width="1897" height="273" key="GridCell.Tab.0.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591444422697" />
+    <state width="1897" height="273" key="GridCell.Tab.0.left" timestamp="1591444422697">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591360854367" />
-    <state width="1897" height="273" key="GridCell.Tab.0.right" timestamp="1591360854367">
+    <state width="1897" height="273" key="GridCell.Tab.0.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591444422697" />
+    <state width="1897" height="273" key="GridCell.Tab.0.right" timestamp="1591444422697">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="273" key="GridCell.Tab.0.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591360854367" />
-    <state width="1897" height="255" key="GridCell.Tab.1.bottom" timestamp="1591357888319">
+    <state width="1897" height="273" key="GridCell.Tab.0.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591444422697" />
+    <state width="1897" height="255" key="GridCell.Tab.1.bottom" timestamp="1591442795704">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="255" key="GridCell.Tab.1.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591357888319" />
-    <state width="1897" height="255" key="GridCell.Tab.1.center" timestamp="1591357888319">
+    <state width="1897" height="255" key="GridCell.Tab.1.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591442795704" />
+    <state width="1897" height="255" key="GridCell.Tab.1.center" timestamp="1591442795704">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="255" key="GridCell.Tab.1.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591357888319" />
-    <state width="1897" height="255" key="GridCell.Tab.1.left" timestamp="1591357888319">
+    <state width="1897" height="255" key="GridCell.Tab.1.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591442795704" />
+    <state width="1897" height="255" key="GridCell.Tab.1.left" timestamp="1591442795704">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="255" key="GridCell.Tab.1.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591357888319" />
-    <state width="1897" height="255" key="GridCell.Tab.1.right" timestamp="1591357888319">
+    <state width="1897" height="255" key="GridCell.Tab.1.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591442795704" />
+    <state width="1897" height="255" key="GridCell.Tab.1.right" timestamp="1591442795704">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="255" key="GridCell.Tab.1.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591357888319" />
+    <state width="1897" height="255" key="GridCell.Tab.1.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591442795704" />
     <state x="2385" y="160" key="SettingsEditor" timestamp="1590732749162">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>

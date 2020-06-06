@@ -46,6 +46,7 @@ class StripCtlWidget(Gtk.Frame):
         self.vbox.pack_start(self.table_selrecsolomute, expand=True, fill=True, padding=0)
 
         self.btn_edit = Gtk.Button.new_with_label("Edit")
+        self.btn_edit.set_hexpand(True)
         self.table_selrecsolomute.attach(self.btn_edit, 0, 0, 2, 1)
         self.btn_select = simplebuttonwidget.SimpleButton("SEL", "#FF9023")
         self.table_selrecsolomute.attach(self.btn_select, 0, 1, 1, 1)

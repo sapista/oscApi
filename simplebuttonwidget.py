@@ -28,7 +28,7 @@ class SimpleButton(Gtk.EventBox):
         self.darea = Gtk.DrawingArea()
         self.darea.connect("draw", self.on_draw)
         self.add(self.darea)
-        self.set_size_request(80, 30)
+        self.set_size_request(60, 40)
 
         # And bind an action to it
         self.set_events(Gdk.EventMask.BUTTON_PRESS_MASK)
