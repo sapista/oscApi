@@ -8,81 +8,80 @@ The widget consists in
 This widget stores all the information of each strip.
 """
 
-import gtk
-import gobject
+from gi.repository import Gtk, GObject, Gdk
+import customframewidget
+import miniMeter
+import LEDWidget
+from stripTypes import StripEnum
+MAX_TRACK_NAME_LENGTH = 15
 
-class StripEnum:
-    AudioTrack, MidiTrack, AudioBus, MidiBus, AuxBus, VCA = range(6)
-
-    def __init__(self):
-        self.ardourtypes = {'AT': self.AudioTrack, 'MT': self.MidiTrack, 'B': self.AudioBus, 'MB': self.MidiBus, 'AX': self.AuxBus, 'V':self.VCA}
-
-    def map_ardour_type(self, sardourtype):
-        return( self.ardourtypes[sardourtype])
-
-
-class StripSelWidget(gtk.Frame):
+class StripSelWidget(Gtk.EventBox):
     __gsignals__ = {
-        'strip_selected': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                           (gobject.TYPE_INT, gobject.TYPE_INT))
+        'strip_selected': (GObject.SIGNAL_RUN_LAST, None,
+                           (int, int))
     }
 
     def __init__(self, index, issid, ibank, sstripname, istriptype, mute, solo, inputs, outputs, rec=None):
-        super(StripSelWidget, self).__init__(issid)
+        super(StripSelWidget, self).__init__()
         self.index = index
         self.ssid = issid
         self.ibank = ibank
-        self.stripname = sstripname
-        self.lbl_name = gtk.Label()
-        self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
+        if len(sstripname) > MAX_TRACK_NAME_LENGTH:
+            self.stripname = sstripname[:MAX_TRACK_NAME_LENGTH]  + "..."
+        else:
+            self.stripname = sstripname
+        self.lbl_name = Gtk.Label()
+        self.lbl_name.set_markup("<span weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
         self.type = istriptype
-        self.mute = mute
-        self.solo = solo
-        if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-            self.rec = rec
+        self.MFrame = customframewidget.CustomFrame(self.type)
         self.inputs = inputs
         self.outputs = outputs
 
-
-
         # Set strip type label
-        dirstriptype = {StripEnum.AudioTrack: 'Audio Track',
+        dirstriptype = {StripEnum.Empty: '',
+                        StripEnum.AudioTrack: 'Audio Track',
                         StripEnum.AudioBus: 'Audio Bus',
                         StripEnum.MidiTrack: 'Midi Track',
                         StripEnum.MidiBus: 'Midi Bus',
                         StripEnum.AuxBus: 'Aux Bus',
                         StripEnum.VCA: 'VCA'}
 
-        self.lbl_type = gtk.Label()
+        self.lbl_type = Gtk.Label()
         self.lbl_type.set_markup("<span size='small'>" + dirstriptype[istriptype] + "</span>")
-        self.btn_sel = gtk.Button("")
 
-        #Solo, mute rec labels
-        self.hbox_smr = gtk.HBox()
-        self.lbl_solo = gtk.Label()
-        self.hbox_smr.pack_start(self.lbl_solo)
-        self.set_solo(self.solo)
-        self.lbl_mute = gtk.Label()
-        self.hbox_smr.pack_start(self.lbl_mute)
-        self.set_mute(self.mute)
+        #Waveform viewer
+        self.meter = miniMeter.MiniMeter()
+
+        # Solo, mute rec labels
+        self.hbox_smr = Gtk.HBox()
+        self.LED_solo = LEDWidget.LEDWidget("Solo", "#00FF00")
+        self.LED_solo.set_value(solo)
+        self.hbox_smr.pack_start(self.LED_solo, expand=True, fill=True, padding=0)
+        self.LED_mute = LEDWidget.LEDWidget("Mute", "#FFFF00")
+        self.LED_mute.set_value(mute)
+        self.hbox_smr.pack_start(self.LED_mute, expand=True, fill=True, padding=0)
         if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-            self.lbl_rec = gtk.Label()
-            self.hbox_smr.pack_start(self.lbl_rec)
-            self.set_rec(self.rec)
+            self.LED_rec = LEDWidget.LEDWidget("Rec", "#FF0000")
+            self.LED_rec.set_value(rec)
+            self.hbox_smr.pack_start(self.LED_rec, expand=True, fill=True, padding=0)
 
-        self.vbox = gtk.VBox()
-        self.vbox.pack_start(self.lbl_name)
-        self.vbox.pack_start(self.lbl_type)
-        self.vbox.pack_start(self.hbox_smr)
-        self.vbox.pack_start(self.btn_sel)
-        self.add(self.vbox)
-        self.set_border_width(2)
-        self.btn_sel.connect("clicked", self.btn_clicked, None)
+        self.vbox = Gtk.VBox()
+        self.vbox.pack_start(self.lbl_name, expand=True, fill=True, padding=0)
+        self.vbox.pack_start(self.lbl_type, expand=True, fill=True, padding=0)
+        self.vbox.pack_start(self.meter, expand=True, fill=True, padding=0)
+        self.vbox.pack_start(self.hbox_smr, expand=True, fill=True, padding=0)
+        self.MFrame.add(self.vbox)
+        self.add(self.MFrame)
+        self.MFrame.set_border_width(2)
+
+        self.set_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self.connect("button-press-event", self.button_press)
 
         self.selected = False
 
-    def btn_clicked(self, widget, data=None):
-        self.emit('strip_selected', self.ssid, self.ibank)
+    def button_press(self, widget, event):
+        if event.button == 1:
+            self.emit('strip_selected', self.ssid, self.ibank)
 
     def get_index(self):
         return self.index
@@ -95,32 +94,41 @@ class StripSelWidget(gtk.Frame):
 
     def set_selected(self, select):
         self.selected = select
+        self.MFrame.set_selected(self.selected)
         if self.selected:
-            self.lbl_name.set_markup("<span foreground='red' weight='bold' size='medium'>" + self.stripname + "</span>")
+            self.lbl_name.set_markup("<span foreground='#00ffc8' weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
         else:
-            self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
+            self.lbl_name.set_markup("<span weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
+
+    def set_bank_selected(self, bank_selected):
+        self.MFrame.set_bank_selected(bank_selected)
 
     def get_selected(self):
         return self.selected
 
     def set_solo(self, bvalue):
-        self.solo = bvalue
-        if self.solo:
-            self.lbl_solo.set_markup("<span background='#00FF00FF' size='small'>solo</span>")
-        else:
-            self.lbl_solo.set_markup("<span size='small'>solo</span>")
+        self.LED_solo.set_value(bvalue)
 
     def set_mute(self, bvalue):
-        self.mute = bvalue
-        if self.mute:
-            self.lbl_mute.set_markup("<span background='#FFFF00FF' size='small'>mute</span>")
-        else:
-            self.lbl_mute.set_markup("<span size='small'>mute</span>")
+        self.LED_mute.set_value(bvalue)
 
     def set_rec(self, bvalue):
         if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-            self.rec = bvalue
-            if self.rec:
-                self.lbl_rec.set_markup("<span background='#FF0000FF' size='small'>rec</span>")
-            else:
-                self.lbl_rec.set_markup("<span size='small'>rec</span>")
+            self.LED_rec.set_value(bvalue)
+
+    def get_solo(self):
+        return self.LED_solo.get_value()
+
+    def get_mute(self):
+        return self.LED_mute.get_value()
+
+    def get_rec(self):
+        if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
+            return self.LED_rec.get_value()
+
+    def set_meter(self, value):
+        self.meter.set_value(value)
+
+    def refresh_meter(self):
+        self.meter.refresh()
+

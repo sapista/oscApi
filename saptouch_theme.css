@@ -1,0 +1,27 @@
+button.titlebutton {
+  min-height: 32px;
+  min-width: 32px;
+  padding: 0;
+}
+
+button.titlebutton.close {
+  background-color: #BE2A2D;
+  color: white;
+}
+
+button.titlebutton.minimize {
+  background-color: #10624E;
+  color: white;
+}
+
+button.titlebutton.minimize:hover {
+  background-color: green;
+  color: white;
+}
+
+button.titlebutton.close:hover {
+  background-color: red;
+  color: white;
+}
+
+@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained-dark.css");

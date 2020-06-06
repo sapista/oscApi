@@ -4,58 +4,57 @@ Definition of a widget to handle all Ardour controls of a single strip.
 This class is responsible to deal with all events related with SPI or I2C fader controller.
 """
 
-import gtk
-import gobject
-import stripselwidget
+from gi.repository import Gtk, GObject
+from stripTypes import StripEnum
 import simplebuttonwidget
 
-class StripCtlWidget(gtk.Frame):
+MAX_TRACK_NAME_LENGTH = 10
+
+class StripCtlWidget(Gtk.Frame):
     __gsignals__ = {
-        'strip_selected': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                           (gobject.TYPE_INT,)),
+        'strip_selected': (GObject.SIGNAL_RUN_LAST, None,
+                           (int, bool)),
 
-        'solo_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                           (gobject.TYPE_INT, gobject.TYPE_BOOLEAN)),
+        'solo_changed': (GObject.SIGNAL_RUN_LAST, None,
+                         (int, bool)),
 
-        'mute_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                         (gobject.TYPE_INT, gobject.TYPE_BOOLEAN)),
+        'mute_changed': (GObject.SIGNAL_RUN_LAST, None,
+                         (int, bool)),
 
-        'rec_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                         (gobject.TYPE_INT, gobject.TYPE_BOOLEAN)),
+        'rec_changed': (GObject.SIGNAL_RUN_LAST, None,
+                        (int, bool)),
 
-        'fader_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                         (gobject.TYPE_INT, gobject.TYPE_FLOAT))
+        'fader_changed': (GObject.SIGNAL_RUN_LAST, None,
+                          (int, float))
     }
 
     def __init__(self):
-        super(StripCtlWidget, self).__init__("")
-        self.ssid = None
-        self.stripname = ""
-        self.type = None
+        super(StripCtlWidget, self).__init__()
+        #self.ssid = None
+        #self.stripname = ""
+        #self.type = None
         self.select = False
         self.solo = False
         self.mute = False
         self.rec = False
+        self.set_label("") #start with an empty label
 
-        self.vbox = gtk.VBox()
-        self.lbl_strip_type = gtk.Label()
-        self.vbox.pack_start(self.lbl_strip_type)
-        self.table_selrecsolomute = gtk.Table(rows=2, columns=2, homogeneous=True)
-        self.vbox.pack_start(self.table_selrecsolomute)
+        self.vbox = Gtk.VBox()
+        self.lbl_strip_type = Gtk.Label()
+        self.vbox.pack_start(self.lbl_strip_type, expand=True, fill=True, padding=0)
+        self.table_selrecsolomute = Gtk.Grid()
+        self.vbox.pack_start(self.table_selrecsolomute, expand=True, fill=True, padding=0)
 
-        # TODO molaria fer un boto jo amb el drawing area pq tingui un marc del color adequat i poder contorlar millor
-        self.btn_select = simplebuttonwidget.SimpleButton("SEL", "#TODO")
-        self.table_selrecsolomute.attach(self.btn_select, left_attach=0, right_attach=1, top_attach=0, bottom_attach=1,
-                                            xoptions=gtk.EXPAND | gtk.FILL, yoptions=gtk.EXPAND)
-        self.btn_rec = simplebuttonwidget.SimpleButton("REC", "#TODO")
-        self.table_selrecsolomute.attach(self.btn_rec, left_attach=1, right_attach=2, top_attach=0, bottom_attach=1,
-                                         xoptions=gtk.EXPAND | gtk.FILL, yoptions=gtk.EXPAND)
-        self.btn_solo = simplebuttonwidget.SimpleButton("SOLO", "#TODO")
-        self.table_selrecsolomute.attach(self.btn_solo, left_attach=0, right_attach=1, top_attach=1, bottom_attach=2,
-                                            xoptions=gtk.EXPAND | gtk.FILL, yoptions=gtk.EXPAND)
-        self.btn_mute = simplebuttonwidget.SimpleButton("MUTE", "#TODO")
-        self.table_selrecsolomute.attach(self.btn_mute, left_attach=1, right_attach=2, top_attach=1, bottom_attach=2,
-                                         xoptions=gtk.EXPAND | gtk.FILL, yoptions=gtk.EXPAND)
+        self.btn_edit = Gtk.Button.new_with_label("Edit")
+        self.table_selrecsolomute.attach(self.btn_edit, 0, 0, 2, 1)
+        self.btn_select = simplebuttonwidget.SimpleButton("SEL", "#FF9023")
+        self.table_selrecsolomute.attach(self.btn_select, 0, 1, 1, 1)
+        self.btn_rec = simplebuttonwidget.SimpleButton("REC", "#FF0000")
+        self.table_selrecsolomute.attach(self.btn_rec, 1, 1, 1, 1)
+        self.btn_solo = simplebuttonwidget.SimpleButton("SOLO", "#00FF00")
+        self.table_selrecsolomute.attach(self.btn_solo, 0, 2, 1, 1)
+        self.btn_mute = simplebuttonwidget.SimpleButton("MUTE", "#FFFF00")
+        self.table_selrecsolomute.attach(self.btn_mute, 1, 2, 1, 1)
 
         self.add(self.vbox)
         self.set_border_width(2)
@@ -65,25 +64,49 @@ class StripCtlWidget(gtk.Frame):
         self.btn_mute.connect("clicked", self.mute_clicked, None)
         self.btn_rec.connect("clicked", self.rec_clicked, None)
 
+        self.set_ssid_name(None, "")
+        self.set_strip_type(StripEnum.Empty)
+
+        self.set_size_request(-1, 120)
+
     def set_ssid_name(self, ssid, name):
         self.ssid = ssid
-        self.stripname = name
-        self.get_label_widget().set_markup("<span weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
+        if len(name) > MAX_TRACK_NAME_LENGTH:
+            self.stripname = name[:MAX_TRACK_NAME_LENGTH] + "..."
+        else:
+            self.stripname = name
+        if ssid is None:
+            self.get_label_widget().set_markup("")
+        else:
+            self.get_label_widget().set_markup(
+           "    <span weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
 
     def set_strip_type(self, itype):
         self.type = itype
         # Set strip type label
-        dirstriptype = {stripselwidget.StripEnum.AudioTrack: 'Audio Track',
-                        stripselwidget.StripEnum.AudioBus: 'Audio Bus',
-                        stripselwidget.StripEnum.MidiTrack: 'Midi Track',
-                        stripselwidget.StripEnum.MidiBus: 'Midi Bus',
-                        stripselwidget.StripEnum.AuxBus: 'Aux Bus',
-                        stripselwidget.StripEnum.VCA: 'VCA'}
+        dirstriptype = {StripEnum.Empty: '',
+                        StripEnum.AudioTrack: 'Audio Track',
+                        StripEnum.AudioBus: 'Audio Bus',
+                        StripEnum.MidiTrack: 'Midi Track',
+                        StripEnum.MidiBus: 'Midi Bus',
+                        StripEnum.AuxBus: 'Aux Bus',
+                        StripEnum.VCA: 'VCA'}
         self.lbl_strip_type.set_label(dirstriptype[self.type])
-        if (self.type is stripselwidget.StripEnum.AudioTrack) or (self.type is stripselwidget.StripEnum.MidiTrack):
+        if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
             self.btn_rec.show()
         else:
             self.btn_rec.hide()
+
+        if self.type is StripEnum.Empty:
+            self.btn_select.hide()
+            self.btn_mute.hide()
+            self.btn_solo.hide()
+            self.btn_edit.hide()
+        else:
+            self.btn_select.show()
+            self.btn_mute.show()
+            self.btn_solo.show()
+            self.btn_edit.show()
 
     def set_select(self, bvalue):
         self.select = bvalue
@@ -101,8 +124,9 @@ class StripCtlWidget(gtk.Frame):
         self.rec = bvalue
         self.btn_rec.set_active_state(self.rec)
 
-    def select_clicked(self, widget, data = None):
-        self.emit('strip_selected', self.ssid)
+    def select_clicked(self, widget, data=None):
+        self.select = not self.select
+        self.emit('strip_selected', self.ssid, self.select)
 
     def solo_clicked(self, widget, data=None):
         self.solo = not self.solo
@@ -115,3 +139,6 @@ class StripCtlWidget(gtk.Frame):
     def rec_clicked(self, widget, data=None):
         self.rec = not self.rec
         self.emit('rec_changed', self.ssid, self.rec)
+
+    def get_ssid(self):
+        return self.ssid

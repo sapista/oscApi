@@ -5,63 +5,78 @@ This class provides an emit function for each recived OSC message.
 Each emit is wrapped around gobject.idle_add() for thread safety.
 """
 
-import gobject
+from gi.repository import GObject
 
 
-class OSCReceiveSignals(gobject.GObject):
+class OSCReceiveSignals(GObject.GObject):
     __gsignals__ = {
-        'list_reply_track': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                          (gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_INT, # ssid, name, type
-                           gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, # mute, solo, rec
-                           gobject.TYPE_INT, gobject.TYPE_INT)), # inputs, outputs
+        'list_reply_track': (GObject.SIGNAL_RUN_LAST, None,
+                          (int, str, int, # ssid, name, type
+                           bool, bool, bool, # mute, solo, rec
+                           int, int)), # inputs, outputs
 
-        'list_reply_bus': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                             (gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_INT, # ssid, name, type
-                              gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, # mute, solo
-                              gobject.TYPE_INT, gobject.TYPE_INT)), # inputs, outputs
+        'list_reply_bus': (GObject.SIGNAL_RUN_LAST, None,
+                             (int, str, int, # ssid, name, type
+                              bool, bool, # mute, solo
+                              int, int)), # inputs, outputs
 
-        'list_reply_end': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+        'list_reply_end': (GObject.SIGNAL_RUN_LAST, None,
                            ()),
 
-        'fader_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                          (gobject.TYPE_INT, gobject.TYPE_FLOAT)),
+        'fader_changed': (GObject.SIGNAL_RUN_LAST, None,
+                          (int, float)),
 
-        'solo_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                        (gobject.TYPE_INT, gobject.TYPE_BOOLEAN)),
+        'solo_changed': (GObject.SIGNAL_RUN_LAST, None,
+                        (int, bool)),
 
-        'mute_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                         (gobject.TYPE_INT, gobject.TYPE_BOOLEAN)),
+        'mute_changed': (GObject.SIGNAL_RUN_LAST, None,
+                         (int, bool)),
 
-        'rec_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                         (gobject.TYPE_INT, gobject.TYPE_BOOLEAN)),
+        'rec_changed': (GObject.SIGNAL_RUN_LAST, None,
+                         (int, bool)),
 
-        'select_changed': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
-                          (gobject.TYPE_INT, gobject.TYPE_BOOLEAN))
+        'select_changed': (GObject.SIGNAL_RUN_LAST, None,
+                          (int, bool)),
+
+        'meter_changed': (GObject.SIGNAL_RUN_LAST, None,
+                           (int, float)),
+
+        'smpte_changed': (GObject.SIGNAL_RUN_LAST, None,
+                          (str,))
+
     }
 
     def __init__(self):
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
 
     def emit_list_reply_track(self, ichannel, sname, itype, bmute, bsolo, brec, iinputs, ioutputs):
-        gobject.idle_add(self.emit, 'list_reply_track', ichannel, sname, itype, bmute, bsolo, brec, iinputs, ioutputs)
+        GObject.idle_add(self.emit, 'list_reply_track', ichannel, sname, itype, bmute, bsolo, brec, iinputs, ioutputs)
 
     def emit_list_reply_bus(self, ichannel, sname, itype, bmute, bsolo, iinputs, ioutputs):
-        gobject.idle_add(self.emit, 'list_reply_bus', ichannel, sname, itype, bmute, bsolo, iinputs, ioutputs)
+        GObject.idle_add(self.emit, 'list_reply_bus', ichannel, sname, itype, bmute, bsolo, iinputs, ioutputs)
 
     def emit_list_reply_end(self):
-        gobject.idle_add(self.emit, 'list_reply_end')
+        GObject.idle_add(self.emit, 'list_reply_end')
 
     def emit_fader_changed(self, ichannel, fvalue):
-        gobject.idle_add(self.emit, 'fader_changed', ichannel, fvalue)
+        GObject.idle_add(self.emit, 'fader_changed', ichannel, fvalue)
 
     def emit_solo_changed(self, ichannel, bvalue):
-        gobject.idle_add(self.emit, 'solo_changed', ichannel, bvalue)
+        GObject.idle_add(self.emit, 'solo_changed', ichannel, bvalue)
 
     def emit_mute_changed(self, ichannel, bvalue):
-        gobject.idle_add(self.emit, 'mute_changed', ichannel, bvalue)
+        GObject.idle_add(self.emit, 'mute_changed', ichannel, bvalue)
 
     def emit_rec_changed(self, ichannel, bvalue):
-        gobject.idle_add(self.emit, 'rec_changed', ichannel, bvalue)
+        GObject.idle_add(self.emit, 'rec_changed', ichannel, bvalue)
 
     def emit_select_changed(self, ichannel, bselected):
-        gobject.idle_add(self.emit, 'select_changed', ichannel, bselected)
+        GObject.idle_add(self.emit, 'select_changed', ichannel, bselected)
+
+    def emit_meter_changed(self, ichannel, fvalue):
+        GObject.idle_add(self.emit, 'meter_changed', ichannel, fvalue)
+
+    def emit_smpte_changed(self, svalue):
+        GObject.idle_add(self.emit, 'smpte_changed', svalue)
+
+

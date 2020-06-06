@@ -5,8 +5,16 @@
         <daw_port>3819</daw_port>
         <recv_port>8000</recv_port>
     </osc_net>
+    <avr_com>
+        <serial_port>/dev/ttyUSB0</serial_port>
+        <baudrate>38400</baudrate>
+        <fader_min>20</fader_min>
+        <fader_max>1000</fader_max>
+    </avr_com>
     <misc>
-        <fullscreen>True</fullscreen>
+        <window_width>1280</window_width>
+        <window_height>750</window_height>
+        <meter_waveform_speed>10</meter_waveform_speed>
     </misc>
 </config>
 
