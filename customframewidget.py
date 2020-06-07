@@ -16,7 +16,7 @@ class CustomFrame(Gtk.Bin):
         self.bankSelected = False
 
         #Set strip color
-        dirstripcolor = {StripEnum.Empty: '#FFFFFF',
+        self.dirstripcolor = {StripEnum.Empty: '#353535',
                         StripEnum.AudioTrack: '#304057',
                         StripEnum.AudioBus: '#20242A',
                         StripEnum.MidiTrack: '#474F3F',
@@ -24,7 +24,7 @@ class CustomFrame(Gtk.Bin):
                         StripEnum.AuxBus: '#496183',
                         StripEnum.VCA: '#683030'}
         self.strip_color = Gdk.RGBA()
-        self.strip_color.parse(dirstripcolor[stripType])
+        self.strip_color.parse(self.dirstripcolor[stripType])
 
         #Set frame normal color
         hsvColor = colorsys.rgb_to_hsv(self.strip_color.red, self.strip_color.green, self.strip_color.blue)
@@ -43,6 +43,10 @@ class CustomFrame(Gtk.Bin):
 
     def set_bank_selected(self, bBankSeleceted):
         self.bankSelected = bBankSeleceted
+        self.queue_draw()
+
+    def set_strip_type(self, stripType):
+        self.strip_color.parse(self.dirstripcolor[stripType])
         self.queue_draw()
 
     def on_draw(self, area, cr):

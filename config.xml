@@ -8,13 +8,13 @@
     <avr_com>
         <serial_port>/dev/ttyUSB0</serial_port>
         <baudrate>250000</baudrate>
-        <fader_min>20</fader_min>
+        <fader_min>50</fader_min>
         <fader_max>1000</fader_max>
     </avr_com>
     <misc>
         <window_width>1280</window_width>
         <window_height>750</window_height>
-        <window_maximize>True</window_maximize>
+        <window_maximize>False</window_maximize>
         <meter_waveform_speed>10</meter_waveform_speed>
     </misc>
 </config>

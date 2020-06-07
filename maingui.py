@@ -20,11 +20,6 @@ This class implements a gtk GUI for sending osc messages using the liblo.send() 
 The GUI is also able to receive OSC messages in a signal-handler model using OSCServer class.
 """
 
-#TODO, tot seguit un trucu k he trobat per internet per quan anem a release final potser cal pel path dels icones
-#from os.path import abspath, dirname
-#WHERE_AM_I = abspath(dirname(__file__))
-
-
 class ControllerGUI(Gtk.Window):
     def delete_event(self, widget, event, data=None):
         quitDialog = Gtk.MessageDialog(parent=None,
@@ -87,6 +82,7 @@ class ControllerGUI(Gtk.Window):
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
         liblo.send(self.target, "/set_surface", 0, 7, 24771, 3, 0) #Check Ardour OSC preferences for reference of these values
             #the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
+            #the feedback value 16579 ....
         liblo.send(self.target, "/strip/list")
 
     def refresh_bank_sel(self):

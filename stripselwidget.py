@@ -31,7 +31,7 @@ class StripSelWidget(Gtk.EventBox):
         else:
             self.stripname = sstripname
         self.lbl_name = Gtk.Label()
-        self.lbl_name.set_markup("<span weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
+        self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
         self.type = istriptype
         self.MFrame = customframewidget.CustomFrame(self.type)
         self.inputs = inputs
@@ -47,7 +47,7 @@ class StripSelWidget(Gtk.EventBox):
                         StripEnum.VCA: 'VCA'}
 
         self.lbl_type = Gtk.Label()
-        self.lbl_type.set_markup("<span size='small'>" + dirstriptype[istriptype] + "</span>")
+        self.lbl_type.set_markup("<span size='small'>" + str(self.ssid) + "-" + dirstriptype[istriptype] + "</span>")
 
         #Waveform viewer
         self.meter = miniMeter.MiniMeter()
@@ -96,9 +96,9 @@ class StripSelWidget(Gtk.EventBox):
         self.selected = select
         self.MFrame.set_selected(self.selected)
         if self.selected:
-            self.lbl_name.set_markup("<span foreground='#00ffc8' weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
+            self.lbl_name.set_markup("<span foreground='#00ffc8' weight='bold' size='medium'>" + self.stripname + "</span>")
         else:
-            self.lbl_name.set_markup("<span weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
+            self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
 
     def set_bank_selected(self, bank_selected):
         self.MFrame.set_bank_selected(bank_selected)

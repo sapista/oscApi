@@ -19,16 +19,25 @@ class SimpleButton(Gtk.EventBox):
         self.label = text
         self.color_active = Gdk.RGBA()
         self.color_active.parse(color)
+
         hsvColor = colorsys.rgb_to_hsv(self.color_active.red, self.color_active.green, self.color_active.blue)
         rgbColor = colorsys.hsv_to_rgb(hsvColor[0], hsvColor[1] * 0.4, hsvColor[2] * 0.5)
         self.color_inactive = Gdk.RGBA()
         self.color_inactive.red = rgbColor[0]
         self.color_inactive.green = rgbColor[1]
         self.color_inactive.blue = rgbColor[2]
+
+        hsvColor = colorsys.rgb_to_hsv(self.color_active.red, self.color_active.green, self.color_active.blue)
+        rgbColor = colorsys.hsv_to_rgb(hsvColor[0], hsvColor[1] * 0.6, hsvColor[2] * 1.2)
+        self.color_brigth = Gdk.RGBA()
+        self.color_brigth.red = rgbColor[0]
+        self.color_brigth.green = rgbColor[1]
+        self.color_brigth.blue = rgbColor[2]
+
         self.darea = Gtk.DrawingArea()
         self.darea.connect("draw", self.on_draw)
         self.add(self.darea)
-        self.set_size_request(60, 40)
+        self.set_size_request(60, 60)
 
         # And bind an action to it
         self.set_events(Gdk.EventMask.BUTTON_PRESS_MASK)
@@ -48,8 +57,8 @@ class SimpleButton(Gtk.EventBox):
         border = 2
         radius = 5
 
-        cr.set_line_width(2)
-        cr.set_source_rgb(0.0, 0.0, 0.0)  # Color of the border line
+        cr.set_line_width(3)
+        cr.set_source_rgb(0.1, 0.1, 0.1)  # Color of the border line
 
         cr.arc(border + radius, border + radius, radius, math.pi, 3.0 * math.pi / 2.0)
         cr.line_to(w - border - radius, border)
@@ -61,15 +70,27 @@ class SimpleButton(Gtk.EventBox):
         cr.close_path()
         cr.stroke_preserve()
 
+        #Always paint the background in off mode
+        cr.set_source_rgb(self.color_inactive.red, self.color_inactive.green, self.color_inactive.blue)
         if self.active_state:
-            cr.set_source_rgb(self.color_active.red, self.color_active.green, self.color_active.blue)
+            cr.fill_preserve()
         else:
-            cr.set_source_rgb(self.color_inactive.red, self.color_inactive.green, self.color_inactive.blue)
-        cr.fill()
+            cr.fill()
 
-        cr.set_source_rgb(0.0, 0.0, 0.0)  # Color for the text
+        #Add the LED effec if enabled
+        if self.active_state:
+            LGrad = cairo.RadialGradient( (w / 2.0) - 20.0, (h / 2.0) - 15.0, 1.0,  (w / 2.0) - 20.0,  (h / 2.0) - 15.0, 55.0)
+            LGrad.add_color_stop_rgba(0.0, self.color_brigth.red, self.color_brigth.green, self.color_brigth.blue, 0.8)
+            LGrad.add_color_stop_rgba(0.8, self.color_active.red, self.color_active.green, self.color_active.blue, 0.9)
+            LGrad.add_color_stop_rgba(1.0, self.color_active.red, self.color_active.green, self.color_active.blue, 0.7)
+            cr.set_source(LGrad)
+            cr.fill()
+
+        #Label
+        cr.set_source_rgb(0.1, 0.1, 0.1)  # Color for the text
         cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(12)
+        cr.set_font_size(16)
         txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents(self.label)
         cr.move_to(w / 2.0 - txt_w / 2.0, h / 2.0 + txt_h / 2.0)
         cr.show_text(self.label)
+

@@ -7,10 +7,12 @@ This class is responsible to deal with all events related with SPI or I2C fader 
 from gi.repository import Gtk, GObject
 from stripTypes import StripEnum
 import simplebuttonwidget
+import customframewidget
 
-MAX_TRACK_NAME_LENGTH = 10
+MAX_TRACK_NAME_LENGTH = 15
 
-class StripCtlWidget(Gtk.Frame):
+
+class StripCtlWidget(customframewidget.CustomFrame):
     __gsignals__ = {
         'strip_selected': (GObject.SIGNAL_RUN_LAST, None,
                            (int, bool)),
@@ -29,24 +31,26 @@ class StripCtlWidget(Gtk.Frame):
     }
 
     def __init__(self):
-        super(StripCtlWidget, self).__init__()
-        #self.ssid = None
-        #self.stripname = ""
-        #self.type = None
+        super(StripCtlWidget, self).__init__(0)
         self.select = False
         self.solo = False
         self.mute = False
         self.rec = False
-        self.set_label("") #start with an empty label
 
         self.vbox = Gtk.VBox()
+        self.lbl_title = Gtk.Label()
+        self.vbox.pack_start(self.lbl_title, expand=True, fill=True, padding=0)
         self.lbl_strip_type = Gtk.Label()
         self.vbox.pack_start(self.lbl_strip_type, expand=True, fill=True, padding=0)
         self.table_selrecsolomute = Gtk.Grid()
         self.vbox.pack_start(self.table_selrecsolomute, expand=True, fill=True, padding=0)
 
-        self.btn_edit = Gtk.Button.new_with_label("Edit")
+        self.btn_edit = Gtk.Button()
+        self.lbl_edit = Gtk.Label()
+        self.lbl_edit.set_markup("<span weight='bold' font_desc='Arial 16'>Edit</span>")
+        self.btn_edit.add(self.lbl_edit)
         self.btn_edit.set_hexpand(True)
+        self.btn_edit.set_size_request(-1, 50)
         self.table_selrecsolomute.attach(self.btn_edit, 0, 0, 2, 1)
         self.btn_select = simplebuttonwidget.SimpleButton("SEL", "#FF9023")
         self.table_selrecsolomute.attach(self.btn_select, 0, 1, 1, 1)
@@ -58,7 +62,7 @@ class StripCtlWidget(Gtk.Frame):
         self.table_selrecsolomute.attach(self.btn_mute, 1, 2, 1, 1)
 
         self.add(self.vbox)
-        self.set_border_width(2)
+        self.vbox.set_border_width(7)
 
         self.btn_select.connect("clicked", self.select_clicked, None)
         self.btn_solo.connect("clicked", self.solo_clicked, None)
@@ -77,13 +81,17 @@ class StripCtlWidget(Gtk.Frame):
         else:
             self.stripname = name
         if ssid is None:
-            self.get_label_widget().set_markup("")
+            self.lbl_title.set_markup("")
         else:
-            self.get_label_widget().set_markup(
-           "    <span weight='bold' size='medium'>" + str(self.ssid) + "-" + self.stripname + "</span>")
+            self.lbl_title.set_markup(
+                "    <span weight='bold' size='medium'>" + self.stripname + "</span>")
 
     def set_strip_type(self, itype):
         self.type = itype
+
+        #Set background color
+        super(StripCtlWidget, self).set_strip_type(itype)
+
         # Set strip type label
         dirstriptype = {StripEnum.Empty: '',
                         StripEnum.AudioTrack: 'Audio Track',
@@ -92,7 +100,10 @@ class StripCtlWidget(Gtk.Frame):
                         StripEnum.MidiBus: 'Midi Bus',
                         StripEnum.AuxBus: 'Aux Bus',
                         StripEnum.VCA: 'VCA'}
-        self.lbl_strip_type.set_label(dirstriptype[self.type])
+        if self.ssid is None:
+            self.lbl_strip_type.set_label("")
+        else:
+            self.lbl_strip_type.set_label(str(self.ssid) + "-" + dirstriptype[self.type])
         if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
             self.btn_rec.show()
         else:
