@@ -17,6 +17,9 @@
         <window_maximize>False</window_maximize>
         <meter_waveform_speed>10</meter_waveform_speed>
     </misc>
+    <debug>
+        <log_invalid_messages>False</log_invalid_messages>
+    </debug>
 </config>
 
 

@@ -64,10 +64,10 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.add(self.vbox)
         self.vbox.set_border_width(7)
 
-        self.btn_select.connect("clicked", self.select_clicked, None)
-        self.btn_solo.connect("clicked", self.solo_clicked, None)
-        self.btn_mute.connect("clicked", self.mute_clicked, None)
-        self.btn_rec.connect("clicked", self.rec_clicked, None)
+        self.btn_select.connect("clicked", self.select_clicked)
+        self.btn_solo.connect("clicked", self.solo_clicked)
+        self.btn_mute.connect("clicked", self.mute_clicked)
+        self.btn_rec.connect("clicked", self.rec_clicked)
 
         self.set_ssid_name(None, "")
         self.set_strip_type(StripEnum.Empty)
@@ -136,19 +136,19 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.rec = bvalue
         self.btn_rec.set_active_state(self.rec)
 
-    def select_clicked(self, widget, data=None):
+    def select_clicked(self, widget):
         self.select = not self.select
         self.emit('strip_selected', self.ssid, self.select)
 
-    def solo_clicked(self, widget, data=None):
+    def solo_clicked(self, widget):
         self.solo = not self.solo
         self.emit('solo_changed', self.ssid, self.solo)
 
-    def mute_clicked(self, widget, data=None):
+    def mute_clicked(self, widget):
         self.mute = not self.mute
         self.emit('mute_changed', self.ssid, self.mute)
 
-    def rec_clicked(self, widget, data=None):
+    def rec_clicked(self, widget):
         self.rec = not self.rec
         self.emit('rec_changed', self.ssid, self.rec)
 
