@@ -14,6 +14,9 @@ MAX_TRACK_NAME_LENGTH = 15
 
 class StripCtlWidget(customframewidget.CustomFrame):
     __gsignals__ = {
+        'strip_edit': (GObject.SIGNAL_RUN_LAST, None,
+                           (int, )),
+
         'strip_selected': (GObject.SIGNAL_RUN_LAST, None,
                            (int, bool)),
 
@@ -42,6 +45,9 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.vbox.pack_start(self.lbl_title, expand=True, fill=True, padding=0)
         self.lbl_strip_type = Gtk.Label()
         self.vbox.pack_start(self.lbl_strip_type, expand=True, fill=True, padding=0)
+        self.lbl_gain = Gtk.Label()
+        self.vbox.pack_start(self.lbl_gain, expand=True, fill=True, padding=0)
+
         self.table_selrecsolomute = Gtk.Grid()
         self.vbox.pack_start(self.table_selrecsolomute, expand=True, fill=True, padding=0)
 
@@ -64,6 +70,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.add(self.vbox)
         self.vbox.set_border_width(7)
 
+        self.btn_edit.connect("clicked", self.edit_clicked)
         self.btn_select.connect("clicked", self.select_clicked)
         self.btn_solo.connect("clicked", self.solo_clicked)
         self.btn_mute.connect("clicked", self.mute_clicked)
@@ -83,8 +90,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         if ssid is None:
             self.lbl_title.set_markup("")
         else:
-            self.lbl_title.set_markup(
-                "    <span weight='bold' size='medium'>" + self.stripname + "</span>")
+            self.lbl_title.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
 
     def set_strip_type(self, itype):
         self.type = itype
@@ -124,6 +130,9 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.select = bvalue
         self.btn_select.set_active_state(self.select)
 
+    def set_gain_label(self, value):
+        self.lbl_gain.set_text(str(round(value, 2)) + " dB" )
+
     def set_solo(self, bvalue):
         self.solo = bvalue
         self.btn_solo.set_active_state(self.solo)
@@ -135,6 +144,10 @@ class StripCtlWidget(customframewidget.CustomFrame):
     def set_rec(self, bvalue):
         self.rec = bvalue
         self.btn_rec.set_active_state(self.rec)
+
+    def edit_clicked(self, widget):
+        self.select = True
+        self.emit('strip_edit', self.ssid)
 
     def select_clicked(self, widget):
         self.select = not self.select

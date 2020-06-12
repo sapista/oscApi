@@ -6,6 +6,12 @@ from gi.repository import Gtk, GObject, Gdk
 import math
 import cairo
 import colorsys
+from enum import Enum
+
+
+class ButtonType(Enum):
+    TEXT_LABEL = 0
+    PHASE_SYMBOL = 1
 
 
 class SimpleButton(Gtk.EventBox):
@@ -13,10 +19,11 @@ class SimpleButton(Gtk.EventBox):
         'clicked': (GObject.SIGNAL_RUN_LAST, None, ())
     }
 
-    def __init__(self, text, color):
+    def __init__(self, text="", color="#FFFFFF", type=ButtonType.TEXT_LABEL):
         super(SimpleButton, self).__init__()
         self.active_state = False
         self.label = text
+        self.type = type
         self.color_active = Gdk.RGBA()
         self.color_active.parse(color)
 
@@ -51,6 +58,9 @@ class SimpleButton(Gtk.EventBox):
         self.active_state = bvalue
         self.queue_draw()
 
+    def get_active_state(self):
+        return self.active_state
+
     def on_draw(self, area, cr):
         w = area.get_allocated_width()
         h = area.get_allocated_height()
@@ -70,27 +80,39 @@ class SimpleButton(Gtk.EventBox):
         cr.close_path()
         cr.stroke_preserve()
 
-        #Always paint the background in off mode
+        # Always paint the background in off mode
         cr.set_source_rgb(self.color_inactive.red, self.color_inactive.green, self.color_inactive.blue)
         if self.active_state:
             cr.fill_preserve()
         else:
             cr.fill()
 
-        #Add the LED effec if enabled
+        # Add the LED effec if enabled
         if self.active_state:
-            LGrad = cairo.RadialGradient( (w / 2.0) - 20.0, (h / 2.0) - 15.0, 1.0,  (w / 2.0) - 20.0,  (h / 2.0) - 15.0, 55.0)
+            LGrad = cairo.RadialGradient((w / 2.0) - 20.0, (h / 2.0) - 15.0, 1.0, (w / 2.0) - 20.0, (h / 2.0) - 15.0,
+                                         55.0)
             LGrad.add_color_stop_rgba(0.0, self.color_brigth.red, self.color_brigth.green, self.color_brigth.blue, 0.8)
             LGrad.add_color_stop_rgba(0.8, self.color_active.red, self.color_active.green, self.color_active.blue, 0.9)
             LGrad.add_color_stop_rgba(1.0, self.color_active.red, self.color_active.green, self.color_active.blue, 0.7)
             cr.set_source(LGrad)
             cr.fill()
 
-        #Label
-        cr.set_source_rgb(0.1, 0.1, 0.1)  # Color for the text
-        cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(16)
-        txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents(self.label)
-        cr.move_to(w / 2.0 - txt_w / 2.0, h / 2.0 + txt_h / 2.0)
-        cr.show_text(self.label)
+        cr.set_source_rgb(0.21, 0.2, 0.17)
+        if self.type is ButtonType.TEXT_LABEL:
+            # Label
+            cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+            cr.set_font_size(16)
+            txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents(self.label)
+            cr.move_to(w / 2.0 - txt_w / 2.0, h / 2.0 + txt_h / 2.0)
+            cr.show_text(self.label)
+
+        elif self.type is ButtonType.PHASE_SYMBOL:
+            cr.set_line_width(4)
+            myRadius = 12
+            cr.move_to( (w / 2.0) + myRadius, (h / 2.0) )
+            cr.arc(w / 2.0, h / 2.0, myRadius, 0.0, 2.0*math.pi)
+            cr.move_to((w / 2.0) - 1.2*myRadius, (h / 2.0) + 1.2*myRadius)
+            cr.line_to((w / 2.0) + 1.2 * myRadius, (h / 2.0) - 1.2 * myRadius)
+            cr.stroke()
+
 

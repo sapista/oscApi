@@ -33,6 +33,9 @@ class OSCServer(GObject.GObject):
         'fader_changed': (GObject.SIGNAL_RUN_LAST, None,
                           (int, float)),
 
+        'fader_gain_changed': (GObject.SIGNAL_RUN_LAST, None,
+                          (int, float)),
+
         'solo_changed': (GObject.SIGNAL_RUN_LAST, None,
                          (int, bool)),
 
@@ -51,6 +54,54 @@ class OSCServer(GObject.GObject):
         'smpte_changed': (GObject.SIGNAL_RUN_LAST, None,
                           (str,)),
 
+        'select_name_changed': (GObject.SIGNAL_RUN_LAST, None,
+                          (str,)),
+
+        'select_phase_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                (int,)),
+
+        'select_rec_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                (int,)),
+
+        'select_mute_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                (int,)),
+
+        'select_solo_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                (int,)),
+
+        'select_soloIso_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                    (int,)),
+
+        'select_soloLock_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                    (int,)),
+
+        'select_monitorIn_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                    (int,)),
+
+        'select_monitorDisk_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                        (int,)),
+
+        'select_ninputs_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                        (int,)),
+
+        'select_noutputs_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                   (int,)),
+
+        'select_trimdB_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                    (float,)),
+
+        'select_fader_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                  (float,)),
+
+        'select_fader_gain_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                 (float,)),
+
+        'select_pan_pos_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                 (float,)),
+
+        'select_pan_width_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                   (float,)),
+
         'unknown_message': (GObject.SIGNAL_RUN_LAST, None,
                             (str,))
 
@@ -60,6 +111,7 @@ class OSCServer(GObject.GObject):
         GObject.GObject.__init__(self)
         self.OSCReceiver = liblo.ServerThread(osc_port)
         self.OSCReceiver.add_method("/strip/fader", 'if', self.fader_callback)
+        self.OSCReceiver.add_method("/strip/gain", 'if', self.fader_gain_callback)
         self.OSCReceiver.add_method("/strip/solo", 'if', self.solo_callback)
         self.OSCReceiver.add_method("/strip/mute", 'if', self.mute_callback)
         self.OSCReceiver.add_method("/strip/recenable", 'if', self.rec_callback)
@@ -69,6 +121,23 @@ class OSCServer(GObject.GObject):
         self.OSCReceiver.add_method("/reply", 'ssiiiii', self.reply_callback_Bus)
         self.OSCReceiver.add_method("/reply", 'shhi', self.reply_callback_EndRoute)
         self.OSCReceiver.add_method("/position/smpte", 's', self.smpte_position_callback)
+        self.OSCReceiver.add_method("/select/name", 's', self.select_name_callback)
+        self.OSCReceiver.add_method("/select/polarity", 'i', self.select_phase_callback)
+        self.OSCReceiver.add_method("/select/recenable", 'i', self.select_rec_callback)
+        self.OSCReceiver.add_method("/select/mute", 'i', self.select_mute_callback)
+        self.OSCReceiver.add_method("/select/solo", 'i', self.select_solo_callback)
+        self.OSCReceiver.add_method("/select/solo_iso", 'i', self.select_soloIso_callback)
+        self.OSCReceiver.add_method("/select/solo_safe", 'i', self.select_soloLock_callback)
+        self.OSCReceiver.add_method("/select/monitor_input", 'i', self.select_monitorIn_callback)
+        self.OSCReceiver.add_method("/select/monitor_disk", 'i', self.select_monitorDisk_callback)
+        self.OSCReceiver.add_method("/select/n_inputs", 'i', self.select_ninputs_callback)
+        self.OSCReceiver.add_method("/select/n_outputs", 'i', self.select_noutputs_callback)
+        self.OSCReceiver.add_method("/select/trimdB", 'f', self.select_trimdB_callback)
+        self.OSCReceiver.add_method("/select/fader", 'f', self.select_fader_callback)
+        self.OSCReceiver.add_method("/select/gain", 'f', self.select_fader_gain_callback)
+        self.OSCReceiver.add_method("/select/pan_stereo_position", 'f', self.select_pan_pos_callback)
+        self.OSCReceiver.add_method("/select/pan_stereo_width", 'f', self.select_pan_width_callback)
+        #TODO add send callbacks
         self.OSCReceiver.add_method(None, None, self.fallback)
 
     def start(self):
@@ -80,6 +149,10 @@ class OSCServer(GObject.GObject):
     def fader_callback(self, path, args):
         i, f = args
         GObject.idle_add(self.emit, 'fader_changed', i, f)
+
+    def fader_gain_callback(self, path, args):
+        i, f = args
+        GObject.idle_add(self.emit, 'fader_gain_changed', i, f)
 
     def solo_callback(self, path, args):
         i, f = args
@@ -122,6 +195,71 @@ class OSCServer(GObject.GObject):
 
     def smpte_position_callback(self, path, args):
         GObject.idle_add(self.emit, 'smpte_changed', args)
+
+    def select_name_callback(self, path, args):
+        GObject.idle_add(self.emit, 'select_name_changed', args[0])
+
+    def select_phase_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_phase_changed', i)
+
+    def select_rec_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_rec_changed', i)
+
+    def select_mute_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_mute_changed', i)
+
+    def select_solo_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_solo_changed', i)
+
+    def select_soloIso_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_soloIso_changed', i)
+
+    def select_soloLock_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_soloLock_changed', i)
+
+    def select_monitorIn_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_monitorIn_changed', i)
+
+    def select_monitorDisk_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_monitorDisk_changed', i)
+
+    def select_ninputs_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_ninputs_changed', i)
+
+    def select_noutputs_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_noutputs_changed', i)
+
+    def select_trimdB_callback(self, path, args):
+        i = float(args[0])
+        GObject.idle_add(self.emit, 'select_trimdB_changed', i)
+
+    def select_fader_callback(self, path, args):
+        i = float(args[0])
+        GObject.idle_add(self.emit, 'select_fader_changed', i)
+
+    def select_fader_gain_callback(self, path, args):
+        i = float(args[0])
+        GObject.idle_add(self.emit, 'select_fader_gain_changed', i)
+
+    def select_pan_pos_callback(self, path, args):
+        i = float(args[0])
+        GObject.idle_add(self.emit, 'select_pan_pos_changed', i)
+
+    def select_pan_width_callback(self, path, args):
+        i = float(args[0])
+        GObject.idle_add(self.emit, 'select_pan_width_changed', i)
+
+    # TODO add send handlers here!
 
     def fallback(self, path, args, types, src):
         str_types = ""

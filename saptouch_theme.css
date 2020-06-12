@@ -1,3 +1,4 @@
+
 button.titlebutton {
   min-height: 32px;
   min-width: 32px;
@@ -25,3 +26,4 @@ button.titlebutton.close:hover {
 }
 
 @import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained-dark.css");
+
