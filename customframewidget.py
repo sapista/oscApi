@@ -2,7 +2,7 @@
 Definition of custom Frame widget based on Gtk.Container.
 """
 
-from gi.repository import Gtk, GObject, Gdk
+from gi.repository import Gtk, Gdk
 import cairo
 import math
 from stripTypes import StripEnum
@@ -28,7 +28,7 @@ class CustomFrame(Gtk.Bin):
 
         #Set frame normal color
         hsvColor = colorsys.rgb_to_hsv(self.strip_color.red, self.strip_color.green, self.strip_color.blue)
-        rgbColor = colorsys.hsv_to_rgb(hsvColor[0], hsvColor[1] * 1.5, hsvColor[2] * 1.5)
+        rgbColor = colorsys.hsv_to_rgb(hsvColor[0], hsvColor[1] * 1.5, hsvColor[2] * 1.8)
         self.frame_color = Gdk.RGBA()
         self.frame_color.red = rgbColor[0]
         self.frame_color.green = rgbColor[1]

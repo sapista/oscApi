@@ -131,7 +131,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.btn_select.set_active_state(self.select)
 
     def set_gain_label(self, value):
-        self.lbl_gain.set_text(str(round(value, 2)) + " dB" )
+        self.lbl_gain.set_text(str(round(value, 1)) + " dB" )
 
     def set_solo(self, bvalue):
         self.solo = bvalue

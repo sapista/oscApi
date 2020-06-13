@@ -3,7 +3,7 @@ This class seats in between the maingui and the pyFaderSerialCOM enabling an abs
 All serial communciations with the AVR are managed from within this class.
 This class keeps track of faders during edit/standard operation modes
 """
-from gi.repository import GLib, GObject
+from gi.repository import GObject
 import pyFaderSerialCOM
 from enum import Enum
 
@@ -67,42 +67,42 @@ class BankAvrController(GObject.GObject):
     def on_fader_moved(self, event, channel, value):
         if self.state == FaderBankState.EIGHT_CHANNELS_FADERS:
             self.faders_pos[channel] = value
-            GLib.idle_add(self.emit, 'fader_bank_mode_changed', channel, value )
+            self.emit('fader_bank_mode_changed', channel, value )
         elif self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
             if channel == 0:
                 self.trim_edit_pos = value * 40.0 - 20.0 #convert from 0 to 1 range to -20 to 20 dB range
-                GLib.idle_add(self.emit, 'trim_single_mode_changed', self.trim_edit_pos)
+                self.emit('trim_single_mode_changed', self.trim_edit_pos)
             elif channel == 1:
                 self.fader_edit_pos = value
-                GLib.idle_add(self.emit, 'fader_single_mode_changed', value)
+                self.emit('fader_single_mode_changed', value)
             elif channel == 2:
                 self.pan_edit_pos = value
-                GLib.idle_add(self.emit, 'pan_pos_single_mode_changed', value)
+                self.emit('pan_pos_single_mode_changed', value)
             elif channel == 3:
                 self.pan_edit_width = value
-                GLib.idle_add(self.emit, 'pan_width_single_mode_changed', value)
+                self.emit('pan_width_single_mode_changed', value)
             else:
                 self.sends_pos[channel - 4] = value
-                GLib.idle_add(self.emit, 'send_single_mode_changed', channel - 4,  value)
+                self.emit('send_single_mode_changed', channel - 4,  value)
 
         return True
 
     def on_fader_untouched(self, event, value):
         if self.state == FaderBankState.EIGHT_CHANNELS_FADERS:
-            GLib.idle_add(self.emit, 'fader_bank_mode_untouched', value)
+            self.emit('fader_bank_mode_untouched', value)
         elif self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
             if value & 0b00000001 == 0b00000001:
-                GLib.idle_add(self.emit, 'trim_single_mode_untouched')
+                self.emit('trim_single_mode_untouched')
             elif value & 0b00000010 == 0b00000010:
-                GLib.idle_add(self.emit, 'fader_single_mode_untouched')
+                self.emit('fader_single_mode_untouched')
             elif value & 0b00000100 == 0b00000100:
-                GLib.idle_add(self.emit, 'pan_pos_single_mode_untouched')
+                self.emit('pan_pos_single_mode_untouched')
             elif value & 0b00001000 == 0b00001000:
-                GLib.idle_add(self.emit, 'pan_width_single_mode_untouched')
+                self.emit('pan_width_single_mode_untouched')
             else:
                 for i in range(0, 4):
                     if value >> (4 + i) == 1:
-                        GLib.idle_add(self.emit, 'send_single_mode_untouched', i)
+                        self.emit('send_single_mode_untouched', i)
 
         return True
 

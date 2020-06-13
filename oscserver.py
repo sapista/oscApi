@@ -102,6 +102,12 @@ class OSCServer(GObject.GObject):
         'select_pan_width_changed': (GObject.SIGNAL_RUN_LAST, None,
                                    (float,)),
 
+        'select_trimdB_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                     (int,)),
+
+        'select_fader_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                            (int,)),
+
         'unknown_message': (GObject.SIGNAL_RUN_LAST, None,
                             (str,))
 
@@ -137,6 +143,9 @@ class OSCServer(GObject.GObject):
         self.OSCReceiver.add_method("/select/gain", 'f', self.select_fader_gain_callback)
         self.OSCReceiver.add_method("/select/pan_stereo_position", 'f', self.select_pan_pos_callback)
         self.OSCReceiver.add_method("/select/pan_stereo_width", 'f', self.select_pan_width_callback)
+        self.OSCReceiver.add_method("/select/trimdB/automation", 'i', self.select_trimdB_automation_callback)
+        self.OSCReceiver.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
+
         #TODO add send callbacks
         self.OSCReceiver.add_method(None, None, self.fallback)
 
@@ -258,6 +267,14 @@ class OSCServer(GObject.GObject):
     def select_pan_width_callback(self, path, args):
         i = float(args[0])
         GObject.idle_add(self.emit, 'select_pan_width_changed', i)
+
+    def select_fader_automation_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_fader_automation_changed', i)
+
+    def select_trimdB_automation_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_trimdB_automation_changed', i)
 
     # TODO add send handlers here!
 

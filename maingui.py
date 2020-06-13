@@ -364,6 +364,11 @@ class ControllerGUI(Gtk.Window):
     def eBtn_monDisk_clicked(self, widget):
         liblo.send(self.target, "/select/monitor_disk", int(not self.eBtn_monitorDisk.get_active_state()))
 
+    def edit_trimdB_automation_changed(self, widget, value):
+        liblo.send(self.target, "/select/trimdB/automation", value) #TODO trimdB automation is not available in Ardour 6.0, check it in future releases
+
+    def edit_fader_automation_changed(self, widget, value):
+        liblo.send(self.target, "/select/fader/automation", value)
     #TODO continue implementing the signals for the rest of the buttons
 
     #OSC receive commands for the edit mode
@@ -395,22 +400,34 @@ class ControllerGUI(Gtk.Window):
         self.eBtn_monitorDisk.set_active_state(bool(value))
 
     def select_nInputs_osc_changed(self, widget, value):
-        self.eLbl_ins.set_text("Inputs: " + str(value))
+        self.eLbl_ins.set_text("In: " + str(value))
 
     def select_nOutputs_osc_changed(self, widget, value):
-        self.eLbl_outs.set_text("Outputs: " + str(value))
+        self.eLbl_outs.set_text("Out: " + str(value))
 
     def select_trimdB_osc_changed(self, widget, value):
         self.faderCtl.move_single_trim(value)
+        self.eTrimCtl.set_gain_label(value)
 
     def select_fader_osc_changed(self, widget, value):
         self.faderCtl.move_single_fader(value)
 
+    def select_fader_gain_osc_changed(self, widget, value):
+        self.eFaderCtl.set_gain_label(value)
+
     def select_panPos_osc_changed(self, widget, value):
         self.faderCtl.move_single_pan_pos(value)
+        self.ePanner.set_panner_position(value)
 
     def select_panWidth_osc_changed(self, widget, value):
         self.faderCtl.move_single_pan_width(value)
+        self.ePanner.set_panner_width(value)
+
+    def select_trimdB_automation_changed(self, widget, value):
+        self.eTrimCtl.set_automation_mode(value)
+
+    def select_fader_automation_changed(self, widget, value):
+        self.eFaderCtl.set_automation_mode(value)
 
     #TODO continue implementing the handlers for the rest of the edit mdoe widgets, sends, automation states, plugins...
 
@@ -595,28 +612,36 @@ class ControllerGUI(Gtk.Window):
         self.eBtn_next.connect("clicked", self.eBtn_next_clicked)
         self.eBtn_prev.connect("clicked", self.eBtn_prev_clicked)
 
-        #Labels to indicate in/out channels
-        self.eHBox_insoutslbl = Gtk.HBox()
-        self.eHBox_insoutslbl2 = Gtk.HBox()
-        self.eHBox_insoutslbl2.set_spacing(20)
-        self.eLbl_ins = Gtk.Label()
-        self.eLbl_ins.set_text("Inputs: ##")
-        self.eHBox_insoutslbl2.pack_start(self.eLbl_ins, expand=False, fill=False, padding=0)
-        self.eLbl_outs = Gtk.Label()
-        self.eLbl_outs.set_text("Outputs: ##")
-        self.eHBox_insoutslbl2.pack_start(self.eLbl_outs, expand=False, fill=False, padding=0)
-        self.eHBox_insoutslbl.pack_start(self.eHBox_insoutslbl2, expand=True, fill=False, padding=0)
-        self.eVBox.pack_start(self.eHBox_insoutslbl, expand=True, fill=False, padding=0)
-
         #Edit HBox
         self.eHBox_edit = Gtk.HBox()
         self.eVBox.pack_start(self.eHBox_edit, expand=True, fill=True, padding=0)
 
         #Left Buttons
+        self.eHBox_chButtons = Gtk.HBox()
+        self.eHBox_chButtons.set_spacing(5)
+        self.eHBox_chButtons.set_border_width(7)
         self.eVBox_buttonsLeft = Gtk.VBox()
         self.eVBox_buttonsLeft.set_spacing(5)
         self.eVBox_buttonsLeft.set_border_width(7)
-        self.eHBox_edit.pack_start(self.eVBox_buttonsLeft, expand=False, fill=False, padding=0)
+        self.eHBox_chButtons.pack_start(self.eVBox_buttonsLeft, expand=False, fill=False, padding=0)
+        self.eHBox_edit.pack_start(self.eHBox_chButtons, expand=False, fill=False, padding=0)
+
+        #Labels to indicate in/out channels
+        self.eFrame_inouts = customframewidget.CustomFrame(stripselwidget.StripEnum.Empty)
+        self.eVBox_insoutslbl = Gtk.VBox()
+        self.eVBox_insoutslbl.set_spacing(10)
+        self.eVBox_insoutslbl.set_border_width(10)
+        self.eLbl_chnnalestitle = Gtk.Label()
+        self.eLbl_chnnalestitle.set_text("Channels")
+        self.eVBox_insoutslbl.pack_start(self.eLbl_chnnalestitle, expand=False, fill=False, padding=0)
+        self.eLbl_ins = Gtk.Label()
+        self.eLbl_ins.set_text("In: ##")
+        self.eVBox_insoutslbl.pack_start(self.eLbl_ins, expand=False, fill=False, padding=0)
+        self.eLbl_outs = Gtk.Label()
+        self.eLbl_outs.set_text("Out: ##")
+        self.eVBox_insoutslbl.pack_start(self.eLbl_outs, expand=False, fill=False, padding=0)
+        self.eFrame_inouts.add(self.eVBox_insoutslbl)
+        self.eVBox_buttonsLeft.pack_start(self.eFrame_inouts, expand=False, fill=False, padding=0)
 
         self.eBtn_phase = simplebuttonwidget.SimpleButton("", "#81A7FF", simplebuttonwidget.ButtonType.PHASE_SYMBOL)
         self.eVBox_buttonsLeft.pack_start(self.eBtn_phase, expand=False, fill=False, padding=0)
@@ -625,6 +650,11 @@ class ControllerGUI(Gtk.Window):
         self.eVBox_buttonsLeft.pack_start(self.eBtn_rec, expand=False, fill=False, padding=0)
         self.eBtn_mute = simplebuttonwidget.SimpleButton("MUTE", "#FFFF00")
         self.eVBox_buttonsLeft.pack_start(self.eBtn_mute, expand=False, fill=False, padding=0)
+
+        self.eVBox_buttonsLeft2 = Gtk.VBox()
+        self.eVBox_buttonsLeft2.set_spacing(5)
+        self.eVBox_buttonsLeft2.set_border_width(7)
+        self.eHBox_chButtons.pack_start(self.eVBox_buttonsLeft2, expand=False, fill=False, padding=0)
 
         self.eFrame_solo = customframewidget.CustomFrame(stripselwidget.StripEnum.Empty)
         self.eVBox_solo = Gtk.VBox()
@@ -641,7 +671,7 @@ class ControllerGUI(Gtk.Window):
         self.eVBox_solo.pack_start(self.eBtn_solo, expand=False, fill=False, padding=0)
         self.eVBox_solo.pack_start(self.eBtn_soloIso, expand=False, fill=False, padding=0)
         self.eVBox_solo.pack_start(self.eBtn_soloLock, expand=False, fill=False, padding=0)
-        self.eVBox_buttonsLeft.pack_start(self.eFrame_solo, expand=False, fill=False, padding=0)
+        self.eVBox_buttonsLeft2.pack_start(self.eFrame_solo, expand=False, fill=False, padding=0)
 
         # Monitor state
         self.eFrame_monitor = customframewidget.CustomFrame(stripselwidget.StripEnum.Empty)
@@ -657,7 +687,7 @@ class ControllerGUI(Gtk.Window):
         self.eBtn_monitorDisk = simplebuttonwidget.SimpleButton("Disk", "#81A7FF")
         self.eBtn_monitorDisk.set_size_request(-1, 40)
         self.eVBox_monitor.pack_start(self.eBtn_monitorDisk, expand=False, fill=False, padding=0)
-        self.eVBox_buttonsLeft.pack_start(self.eFrame_monitor, expand=False, fill=False, padding=0)
+        self.eVBox_buttonsLeft2.pack_start(self.eFrame_monitor, expand=False, fill=False, padding=0)
 
         #Left buttons signals connect
         self.eBtn_phase.connect("clicked", self.edit_phaseBtn_clicked)
@@ -670,7 +700,7 @@ class ControllerGUI(Gtk.Window):
         self.eBtn_monitorDisk.connect("clicked", self.eBtn_monDisk_clicked)
 
 
-        #An spacer
+        #Add spacer
         self.bank_separator_edit = Gtk.Image.new_from_file("icons/bank_spacer.png")
         self.eVBox.pack_start(self.bank_separator_edit, expand=False, fill=False, padding=0)
 
@@ -683,17 +713,16 @@ class ControllerGUI(Gtk.Window):
         #Trim gain
         self.eTrimCtl = selectFaderCtlWidget.SelectFaderCtlWidget("Trim")
         self.table_bank_edit.attach(self.eTrimCtl, 0, 0, 1, 1)
+        self.eTrimCtl.connect("automation_changed", self.edit_trimdB_automation_changed)
 
         #Fader gain
         self.eFaderCtl = selectFaderCtlWidget.SelectFaderCtlWidget("Fader")
         self.table_bank_edit.attach(self.eFaderCtl, 1, 0, 1, 1)
+        self.eFaderCtl.connect("automation_changed", self.edit_fader_automation_changed)
 
         #Panner
-        #TODO I need a new widget for the panner, this are just two dummy copies of fader ctl to see the layout
-        self.eDummyPAN1 = selectFaderCtlWidget.SelectFaderCtlWidget("DummyPan")
-        self.table_bank_edit.attach(self.eDummyPAN1, 2, 0, 1, 1)
-        self.eDummyPAN2 = selectFaderCtlWidget.SelectFaderCtlWidget("DummyPan")
-        self.table_bank_edit.attach(self.eDummyPAN2, 3, 0, 1, 1)
+        self.ePanner = selectFaderCtlWidget.SelectFaderCtlWidget("Stereo Panner", True)
+        self.table_bank_edit.attach(self.ePanner, 2, 0, 2, 1)
 
         #Sends
         self.eSendsCtl = []
@@ -731,8 +760,11 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_noutputs_changed", self.select_nOutputs_osc_changed)
         self.oscserver.connect("select_trimdB_changed", self.select_trimdB_osc_changed)
         self.oscserver.connect("select_fader_changed", self.select_fader_osc_changed)
+        self.oscserver.connect("select_fader_gain_changed", self.select_fader_gain_osc_changed)
         self.oscserver.connect("select_pan_pos_changed", self.select_panPos_osc_changed)
         self.oscserver.connect("select_pan_width_changed", self.select_panWidth_osc_changed)
+        self.oscserver.connect("select_trimdB_automation_changed", self.select_trimdB_automation_changed)
+        self.oscserver.connect("select_fader_automation_changed", self.select_fader_automation_changed)
         #TODO continue connecting the rest of edit mode osc messages
 
 
