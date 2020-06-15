@@ -108,6 +108,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
                         StripEnum.VCA: 'VCA'}
         if self.ssid is None:
             self.lbl_strip_type.set_label("")
+            self.lbl_gain.set_label("")
         else:
             self.lbl_strip_type.set_label(str(self.ssid) + "-" + dirstriptype[self.type])
         if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):

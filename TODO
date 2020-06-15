@@ -1,0 +1,31 @@
+
+> Sends. Implement
+
+> VCA
+
+
+
+################################################################################################################
+DEBUG OSC
+
+#Listen to incoming messages from Ardour
+dump_osc 8000
+
+#Config surface
+send_osc osc.udp://127.0.0.1:3819 /set_surface 0 7 24771 2 0
+
+#Select a strip
+send_osc osc.udp://127.0.0.1:3819 /strip/select 1 1
+
+#Set panner
+send_osc osc.udp://127.0.0.1:3819 /select/pan_stereo_position 0.9
+
+
+#Config surface
+send_osc osc.udp://127.0.0.1:3819 /set_surface 0 7 24771 2 0
+
+#Select the second strip
+send_osc osc.udp://127.0.0.1:3819 /strip/select 2 1
+
+#Set a pan command:
+send_osc osc.udp://127.0.0.1:3819 /select/pan_stereo_position 0.4

@@ -145,6 +145,7 @@ class OSCServer(GObject.GObject):
         self.OSCReceiver.add_method("/select/pan_stereo_width", 'f', self.select_pan_width_callback)
         self.OSCReceiver.add_method("/select/trimdB/automation", 'i', self.select_trimdB_automation_callback)
         self.OSCReceiver.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
+        self.OSCReceiver.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
 
         #TODO add send callbacks
         self.OSCReceiver.add_method(None, None, self.fallback)

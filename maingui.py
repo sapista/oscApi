@@ -127,7 +127,7 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def strip_selected(self, widget, issid, ibank):
-        liblo.send(self.target, "/strip/select", issid, 1)
+        self.safe_strip_select(issid)
 
     def refresh_strip_list(self, widget):
         self.strips_list_widgets = []  # Clear the list
@@ -169,13 +169,13 @@ class ControllerGUI(Gtk.Window):
 
     # Callback of current bank controls
     def bank_edit_clicked (self, widget, ichannel):
-        print("Edit channel " + str(ichannel) )
-        liblo.send(self.target, "/strip/select", ichannel, 1)
+        self.safe_strip_select(ichannel)
         self.faderCtl.set_state(bankAvrController.FaderBankState.SINGLE_CHANNEL_EDIT)
         self.stack.set_visible_child_full("edit_mode", Gtk.StackTransitionType.SLIDE_UP) #Switch to edit mode
 
     def bank_sel_clicked(self, widget, ichannel, bvalue):
-        liblo.send(self.target, "/strip/select", ichannel, int(bvalue))
+        if bvalue:
+            self.safe_strip_select(ichannel)
 
     def bank_rec_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/recenable", ichannel, int(bvalue))
@@ -308,8 +308,7 @@ class ControllerGUI(Gtk.Window):
 
         self.table.show_all()
         self.table.show()
-        liblo.send(self.target, "/strip/select", self.strips_list_widgets[0].get_ssid(),
-                   1)  # Start by selcting the first srip
+        self.safe_strip_select(self.strips_list_widgets[0].get_ssid())
         self.select_osc_changed(None, self.strips_list_widgets[0].get_ssid(),
                                 True)  # Force bank selection because if Ardour has already selected the first ssid the OSC feedback will not be send
         self.table_bank.set_sensitive(True)
@@ -329,7 +328,7 @@ class ControllerGUI(Gtk.Window):
             next_select = self.last_selected_stripWidget + 1
             if next_select == len(self.strips_list_widgets):
                 next_select = 0
-            liblo.send(self.target, "/strip/select", self.strips_list_widgets[next_select].get_ssid(), 1)
+            self.safe_strip_select(self.strips_list_widgets[next_select].get_ssid())
             self.last_selected_stripWidget = next_select
 
     def eBtn_prev_clicked(self, widget):
@@ -337,7 +336,7 @@ class ControllerGUI(Gtk.Window):
             next_select = self.last_selected_stripWidget - 1
             if next_select == -1:
                 next_select = len(self.strips_list_widgets) - 1
-            liblo.send(self.target, "/strip/select", self.strips_list_widgets[next_select].get_ssid(), 1)
+            self.safe_strip_select( self.strips_list_widgets[next_select].get_ssid())
             self.last_selected_stripWidget = next_select
 
     def edit_phaseBtn_clicked(self, widget):
@@ -431,6 +430,14 @@ class ControllerGUI(Gtk.Window):
 
     #TODO continue implementing the handlers for the rest of the edit mdoe widgets, sends, automation states, plugins...
 
+    #Safe select to handle state of stereo panners properly and unificate all calls to /strip/select
+    def safe_strip_select(self, ssid):
+        if self.last_selected_ssid != ssid:
+            self.ePanner.set_panner_width(1.0) #If selected channel changed start assuiming full stereo width since mono and balance mode do not feedback this command
+            self.faderCtl.move_single_pan_width(1.0) #set fader width at center
+        self.last_selected_ssid = ssid
+        liblo.send(self.target, "/strip/select", ssid, 1)
+
     # Debug method to insert a line of ##### in terminal
     def dbg_insert_marker_line(self, widget, data=None):
         print("##################################################")
@@ -472,6 +479,9 @@ class ControllerGUI(Gtk.Window):
         except liblo.AddressError as err:
             print(str(err))
             sys.exit()
+
+        #Keep track of the last selected ssid
+        self.last_selected_ssid = -1
 
         self.vbox_top = Gtk.VBox()
 

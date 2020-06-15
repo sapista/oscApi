@@ -67,8 +67,12 @@ class PannerWidget(Gtk.DrawingArea):
         BALL_RADIUS = 18
 
         #Line connecting both balls
-        lpos = (self.position + (0.5 * self.width)) * (2 * MARGIN_X - w) + w - MARGIN_X
-        rpos = (self.position - (0.5 * self.width)) * (2 * MARGIN_X - w) + w - MARGIN_X
+        plotWidth = self.width
+        if self.width == 1.0 and self.position != 0.5:
+            plotWidth = 0.0
+
+        lpos = (self.position + (0.5 * plotWidth)) * (2 * MARGIN_X - w) + w - MARGIN_X
+        rpos = (self.position - (0.5 * plotWidth)) * (2 * MARGIN_X - w) + w - MARGIN_X
         cr.set_line_width(8)
         cr.set_source_rgba(0.8, 0.8, 0.8, 0.5)
         cr.move_to(lpos,  (h / 2.0) - MARGIN_Y)
@@ -82,35 +86,40 @@ class PannerWidget(Gtk.DrawingArea):
         cr.arc(lpos, (h / 2.0) - MARGIN_Y, BALL_RADIUS, 0.0, 2.0 * math.pi)
         cr.close_path()
         cr.stroke_preserve()
-        if self.width > 0 :
+        if plotWidth > 0 :
             cr.set_source_rgba(0.23, 0.43, 0.58, 1)
-        else:
+        elif plotWidth < 0 :
             cr.set_source_rgba(0.41, 0.15, 0.16, 1)
+        else:
+            cr.set_source_rgba(0.32, 0.51, 0.31, 1) #Mono/Balance mode
         cr.fill()
         cr.set_source_rgb(0.6, 0.6, 0.6)
         cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         cr.set_font_size(18)
         txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents("L")
         cr.move_to(lpos - txt_w / 2.0, (h / 2.0) - MARGIN_Y + txt_h / 2.0)
-        cr.show_text("L")
+        if plotWidth == 0.0:
+            cr.show_text("P")
+        else:
+            cr.show_text("L")
 
         #Draw the Right ball
-        cr.set_line_width(1.5)
-        cr.set_source_rgb(0.8, 0.8, 0.8)
-        cr.move_to(rpos + BALL_RADIUS , (h / 2.0) - MARGIN_Y)
-        cr.arc(rpos, (h / 2.0) - MARGIN_Y, BALL_RADIUS, 0.0, 2.0 * math.pi)
-        cr.close_path()
-        cr.stroke_preserve()
-        if self.width > 0 :
-            cr.set_source_rgba(0.23, 0.43, 0.58, 1)
-        else:
-            cr.set_source_rgba(0.41, 0.15, 0.16, 1)
-        cr.fill()
-        cr.set_source_rgb(0.6, 0.6, 0.6)
-        cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(18)
-        txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents("R")
-        cr.move_to(rpos - txt_w / 2.0, (h / 2.0) - MARGIN_Y + txt_h / 2.0)
-        cr.show_text("R")
+        if plotWidth != 0.0:
+            cr.set_line_width(1.5)
+            cr.set_source_rgb(0.8, 0.8, 0.8)
+            cr.move_to(rpos + BALL_RADIUS , (h / 2.0) - MARGIN_Y)
+            cr.arc(rpos, (h / 2.0) - MARGIN_Y, BALL_RADIUS, 0.0, 2.0 * math.pi)
+            cr.close_path()
+            cr.stroke_preserve()
+            if plotWidth > 0 :
+                cr.set_source_rgba(0.23, 0.43, 0.58, 1)
+            else:
+                cr.set_source_rgba(0.41, 0.15, 0.16, 1)
+            cr.fill()
+            cr.set_source_rgb(0.6, 0.6, 0.6)
+            cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+            cr.set_font_size(18)
+            txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents("R")
+            cr.move_to(rpos - txt_w / 2.0, (h / 2.0) - MARGIN_Y + txt_h / 2.0)
+            cr.show_text("R")
 
-        #TODO investigate how to distinguish between stereo/mono/balance in Ardour 6.0

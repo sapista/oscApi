@@ -59,7 +59,7 @@ class FaderCOM(GObject.GObject):
         self.PICOMID_SELECT  = 0x04
 
     def moveFader(self, channel, value):
-        position = int(value * 1023.0) #Float to int conversion
+        position = int(value * (self.FADER_MAX - self.FADER_MIN) + self.FADER_MIN ) #Float to int conversion
         if (channel > 7) or (channel < 0):
             exit("Error: Fader channel must be an integer from 0 to 7")
         if position > self.FADER_MAX :
@@ -101,7 +101,12 @@ class FaderCOM(GObject.GObject):
             # we got a fader message
             channel = int((self.RX_packet[0] & 0x38) >> 3);
             value = (int(self.RX_packet[0] & 0x07) << 7) | (int(self.RX_packet[1] & 0x7F));
-            GLib.idle_add(self.emit, 'fader_changed', channel, float(value)/1023.0) #Emit with to float conversion
+            if value > self.FADER_MAX:
+                value = self.FADER_MAX
+            if value < self.FADER_MIN:
+                value = self.FADER_MIN
+            value = (value/(self.FADER_MAX - self.FADER_MIN)) - (self.FADER_MIN/(self.FADER_MAX - self.FADER_MIN))
+            GLib.idle_add(self.emit, 'fader_changed', channel, value) #Emit with to float conversion
 
         else:
             if self.RX_packet[0] & 0x20:

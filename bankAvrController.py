@@ -67,7 +67,7 @@ class BankAvrController(GObject.GObject):
     def on_fader_moved(self, event, channel, value):
         if self.state == FaderBankState.EIGHT_CHANNELS_FADERS:
             self.faders_pos[channel] = value
-            self.emit('fader_bank_mode_changed', channel, value )
+            self.emit('fader_bank_mode_changed', channel, value)
         elif self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
             if channel == 0:
                 self.trim_edit_pos = value * 40.0 - 20.0 #convert from 0 to 1 range to -20 to 20 dB range
@@ -116,7 +116,7 @@ class BankAvrController(GObject.GObject):
             self.avrCOM.moveFader(0, self.trim_edit_pos)
             self.avrCOM.moveFader(1, self.fader_edit_pos)
             self.avrCOM.moveFader(2, self.pan_edit_pos)
-            self.avrCOM.moveFader(2, self.pan_edit_width)
+            self.avrCOM.moveFader(3, self.pan_edit_width)
             for i in range(0,4):
                 self.avrCOM.moveFader(i+4, self.sends_pos[i])
 
@@ -134,34 +134,40 @@ class BankAvrController(GObject.GObject):
         return self.state
 
     def move_bank_fader(self, iFader, value):
-        self.faders_pos[iFader] = value
-        if self.state == FaderBankState.EIGHT_CHANNELS_FADERS:
-            self.avrCOM.moveFader(iFader, value)
+        if self.faders_pos[iFader] != value:
+            self.faders_pos[iFader] = value
+            if self.state == FaderBankState.EIGHT_CHANNELS_FADERS:
+                self.avrCOM.moveFader(iFader, value)
 
     def move_single_trim(self, value):
-        self.trim_edit_pos = 0.025 * value + 0.5 #Converting it from -20 to 20 dB range to 0 to 1
-        if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
-            self.avrCOM.moveFader(0, self.trim_edit_pos)
+        if self.trim_edit_pos != value:
+            self.trim_edit_pos = value
+            if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
+                self.avrCOM.moveFader(0, 0.025 * value + 0.5) #Converting it from -20 to 20 dB range to 0 to 1
 
     def move_single_fader(self, value):
-        self.fader_edit_pos = value
-        if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
-            self.avrCOM.moveFader(1, value)
+        if self.fader_edit_pos != value:
+            self.fader_edit_pos = value
+            if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
+                self.avrCOM.moveFader(1, value)
 
     def move_single_pan_pos(self, value):
-        self.pan_edit_pos = value
-        if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
-            self.avrCOM.moveFader(2, value)
+        if self.pan_edit_pos != value:
+            self.pan_edit_pos = value
+            if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
+                self.avrCOM.moveFader(2, value)
 
     def move_single_pan_width(self, value):
-        self.pan_edit_width = value
-        if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
-            self.avrCOM.moveFader(3, value)
+        if self.pan_edit_width != value:
+            self.pan_edit_width = value
+            if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
+                self.avrCOM.moveFader(3, value)
 
     def move_single_send(self, iSend, value):
-        self.sends_pos[iSend] = value
-        if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
-            self.avrCOM.moveFader(4+iSend, value)
+        if self.sends_pos[iSend] != value:
+            self.sends_pos[iSend] = value
+            if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
+                self.avrCOM.moveFader(4+iSend, value)
 
     def close(self):
         self.avrCOM.close()
