@@ -17,6 +17,7 @@ import ast
 import customframewidget
 import bankAvrController
 import selectFaderCtlWidget
+import stripTable
 
 """ ControllerGUI class
 This class implements a gtk GUI for sending osc messages using the liblo.send() method.
@@ -63,7 +64,7 @@ class ControllerGUI(Gtk.Window):
             self.bLooping = True
 
     def fader_bank_mode_changed(self, event, channel, value):
-        if len(self.strips_list_widgets) > 0:  # Only if we have strip list from DAW
+        if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.strips_list_selbank[channel].get_ssid()
             if selSSID is not None:
                 liblo.send(self.target, "/strip/fader/touch", selSSID, 1)  # Using floats it works
@@ -71,7 +72,7 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def fader_bank_mode_untouched(self, event, value):
-        if len(self.strips_list_widgets) > 0:  # Only if we have strip list from DAW
+        if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             # print("Unotuch event: %x", value)
             for i in range(0, 8):
                 if value & (1 << i):
@@ -126,46 +127,40 @@ class ControllerGUI(Gtk.Window):
         #liblo.send(self.target, "/select/XXXXXXX", 0)
         return True
 
-    def strip_selected(self, widget, issid, ibank):
+    def strip_select_changed(self, widget, issid):
         self.safe_strip_select(issid)
 
     def refresh_strip_list(self, widget):
-        self.strips_list_widgets = []  # Clear the list
-        self.strips_ssid_id_dict = dict()  # Clear the id ssid dictionary
+        self.strip_table.clear_strips()
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
         liblo.send(self.target, "/set_surface", 0, 7, 24771, 2, 0)  # Check Ardour OSC preferences for reference of these values
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
         # the feedback value 16579 ....
         liblo.send(self.target, "/strip/list")
 
-    def refresh_bank_sel(self):
-        for i in range(0, len(self.strips_list_selbank)):
-            working_ssid = self.current_selected_bank * 8 + i + 1  # plus one because ardour indexes from 1
-            if working_ssid in self.strips_ssid_id_dict:
-                id = self.strips_ssid_id_dict[working_ssid]
-                self.strips_list_selbank[i].set_ssid_name(working_ssid, self.strips_list_widgets[id].stripname)
-                self.strips_list_selbank[i].set_strip_type(self.strips_list_widgets[id].type)
-                self.strips_list_selbank[i].set_select(self.strips_list_widgets[id].get_selected())
-                self.strips_list_selbank[i].set_solo(self.strips_list_widgets[id].get_solo())
-                self.strips_list_selbank[i].set_mute(self.strips_list_widgets[id].get_mute())
-                if (self.strips_list_widgets[id].type is stripselwidget.StripEnum.AudioTrack) or (
-                        self.strips_list_widgets[id].type is stripselwidget.StripEnum.MidiTrack):
-                    self.strips_list_selbank[i].set_rec(self.strips_list_widgets[id].get_rec())
-                self.strips_list_selbank[i].set_sensitive(True)
-            else:
-                # ssid not present
-                self.strips_list_selbank[i].set_ssid_name(None, "")
-                self.strips_list_selbank[i].set_sensitive(False)
-                self.strips_list_selbank[i].set_strip_type(stripselwidget.StripEnum.Empty)
-                self.strips_list_selbank[i].set_select(False)
-                self.strips_list_selbank[i].set_solo(False)
-                self.strips_list_selbank[i].set_mute(False)
-                self.strips_list_selbank[i].set_rec(False)
-                self.faderCtl.move_bank_fader(i, 0)
+    def bank_channel_select_changed(self, widget, index, value):
+        self.strips_list_selbank[index].set_select(value)
 
-        for i in range(0, len(self.strips_list_widgets)):
-            self.strips_list_widgets[i].set_bank_selected(
-                self.strips_list_widgets[i].get_bank() == self.current_selected_bank)
+    def bank_channel_ssid_name_changed(self, widget, index, ssid, name):
+        self.strips_list_selbank[index].set_ssid_name(ssid, name)
+
+    def bank_channel_type_changed(self, widget, index, type):
+        self.strips_list_selbank[index].set_strip_type(type)
+
+    def bank_channel_fader_changed(self, widget, index, value):
+        self.faderCtl.move_bank_fader(index, value)
+
+    def bank_channel_fader_gain_changed(self, widget, index, value):
+        self.strips_list_selbank[index].set_gain_label(value)
+
+    def bank_channel_solo_changed(self, widget, index, value):
+        self.strips_list_selbank[index].set_solo(value)
+
+    def bank_channel_mute_changed(self, widget, index, value):
+        self.strips_list_selbank[index].set_mute(value)
+
+    def bank_channel_rec_changed(self, widget, index, value):
+        self.strips_list_selbank[index].set_rec(value)
 
     # Callback of current bank controls
     def bank_edit_clicked (self, widget, ichannel):
@@ -188,58 +183,34 @@ class ControllerGUI(Gtk.Window):
 
     # Callbacks from OSC incoming messages
     def fader_osc_changed(self, widget, ichannel, fvalue):
-        for i in range(0, len(self.strips_list_selbank)):  # For each of the 8 faders
-            if ichannel == self.strips_list_selbank[i].get_ssid():
-                self.faderCtl.move_bank_fader(i, fvalue)
-                # print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
-                break
+        # print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
+        self.strip_table.set_fader(ichannel, fvalue)
 
     def fader_gain_osc_changed(self, widget, ichannel, fvalue):
-        for i in range(0, len(self.strips_list_selbank)):  # For each of the 8 faders
-            if ichannel == self.strips_list_selbank[i].get_ssid():
-                self.strips_list_selbank[i].set_gain_label(fvalue)
-                # print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
-                break
+        # print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
+        self.strip_table.set_fader_gain(ichannel, fvalue)
 
     def solo_osc_changed(self, widget, ichannel, bvalue):
         # print "solo received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        if ichannel in self.strips_ssid_id_dict:
-            self.strips_list_widgets[self.strips_ssid_id_dict[ichannel]].set_solo(bvalue)
-            if self.current_selected_bank is self.strips_list_widgets[self.strips_ssid_id_dict[ichannel]].get_bank():
-                self.strips_list_selbank[(ichannel - 1) % 8].set_solo(bvalue)
+        self.strip_table.set_solo(ichannel, bvalue)
 
     def mute_osc_changed(self, widget, ichannel, bvalue):
         # print "mute received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        if ichannel in self.strips_ssid_id_dict:
-            self.strips_list_widgets[self.strips_ssid_id_dict[ichannel]].set_mute(bvalue)
-            if self.current_selected_bank is self.strips_list_widgets[self.strips_ssid_id_dict[ichannel]].get_bank():
-                self.strips_list_selbank[(ichannel - 1) % 8].set_mute(bvalue)
+        self.strip_table.set_mute(ichannel, bvalue)
 
     def rec_osc_changed(self, widget, ichannel, bvalue):
         # print "rec received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        if ichannel in self.strips_ssid_id_dict:
-            self.strips_list_widgets[self.strips_ssid_id_dict[ichannel]].set_rec(bvalue)
-            if self.current_selected_bank is self.strips_list_widgets[self.strips_ssid_id_dict[ichannel]].get_bank():
-                self.strips_list_selbank[(ichannel - 1) % 8].set_rec(bvalue)
+        self.strip_table.set_rec(ichannel, bvalue)
 
     def select_osc_changed(self, widget, ichannel, bvalue):
         # print "select received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        if ichannel in self.strips_ssid_id_dict:
-            new_selected_widget = self.strips_ssid_id_dict[ichannel]
-            self.strips_list_widgets[new_selected_widget].set_selected(bvalue)
-
-            # Check if bank has changed
-            if bvalue:  # Do not refresh the bank if selection is false!
-                self.current_selected_bank = self.strips_list_widgets[new_selected_widget].get_bank()
-                self.refresh_bank_sel()
-                self.last_selected_stripWidget = new_selected_widget
-                self.eLbl_ssid.set_markup("<span weight='bold' size='xx-large' color='white'>("+str(ichannel)+")</span>")
+        self.strip_table.strip_select(ichannel, bvalue)
+        if bvalue:
+            self.eLbl_ssid.set_markup("<span weight='bold' size='xx-large' color='white'>("+str(ichannel)+")</span>")
 
     def meter_osc_changed(self, widget, ichannel, fvalue):
         # print ("meter on channel '%d' = '%s'" % (ichannel, fvalue))
-        if ichannel in self.strips_ssid_id_dict:
-            curr_widget = self.strips_ssid_id_dict[ichannel]
-            self.strips_list_widgets[curr_widget].set_meter(fvalue)
+        self.strip_table.set_meter(ichannel, fvalue)
 
     def smpte_osc_changed(self, widget, svalue):
         # print("SMPTE '%s'" % (svalue))
@@ -257,66 +228,19 @@ class ControllerGUI(Gtk.Window):
         self.btn_loop.set_image(self.btn_loop_WhiteIcon)
         return True
 
-    def list_osc_reply_track(self, widget, ssid, name, type, mute, solo, rec, inputs, outputs, data=None):
-        self.strips_ssid_id_dict[ssid] = len(self.strips_list_widgets)
-        self.strips_list_widgets.append(stripselwidget.StripSelWidget(len(self.strips_list_widgets),
-                                                                      ssid,
-                                                                      len(self.strips_list_widgets) // 8,
-                                                                      name,
-                                                                      type,
-                                                                      mute,
-                                                                      solo,
-                                                                      inputs,
-                                                                      outputs,
-                                                                      rec))
+    def list_osc_reply_track(self, widget, ssid, name, type, mute, solo, rec, inputs, outputs):
+        self.strip_table.append_strip(ssid, name, type, mute, solo, rec, inputs, outputs)
 
-    def list_osc_reply_bus(self, widget, ssid, name, type, mute, solo, inputs, outputs, data=None):
-        self.strips_ssid_id_dict[ssid] = len(self.strips_list_widgets)
-        self.strips_list_widgets.append(stripselwidget.StripSelWidget(len(self.strips_list_widgets),
-                                                                      ssid,
-                                                                      len(self.strips_list_widgets) // 8,
-                                                                      name,
-                                                                      type,
-                                                                      mute,
-                                                                      solo,
-                                                                      inputs,
-                                                                      outputs))
+    def list_osc_reply_bus(self, widget, ssid, name, type, mute, solo, inputs, outputs):
+        self.strip_table.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
 
-    def list_osc_reply_end(self, widget, data=None):
-        self.fill_strips_table()
+    def list_osc_reply_end(self, widget):
+        self.strip_table.fill_strips()
+        self.safe_strip_select(self.strip_table.get_strip_ssid(0))
 
-    def fill_strips_table(self):
-        self.viewport_table.remove(self.table)
-        self.number_of_banks = int(math.ceil(len(self.strips_list_widgets) / 8.0))
-        self.table = Gtk.Grid()
-        self.table.set_row_spacing(5)
-        self.table.set_column_homogeneous(True)
-        self.viewport_table.add(self.table)
-
-        for i in range(0, len(self.strips_list_widgets)):
-            self.table.attach(self.strips_list_widgets[i],
-                              i - 8 * self.strips_list_widgets[i].get_bank(),
-                              self.strips_list_widgets[i].get_bank(),
-                              1,
-                              1)
-            self.strips_list_widgets[i].connect("strip_selected", self.strip_selected)
-
-        if len(self.strips_list_widgets) < 8:
-            # Insert empty columns to fill at least 8 columns, use and empty label to achive that
-            for i in range(len(self.strips_list_widgets), 8):
-                self.table.attach(Gtk.Label(), i, 0, 1, 1)
-
-        self.table.show_all()
-        self.table.show()
-        self.safe_strip_select(self.strips_list_widgets[0].get_ssid())
-        self.select_osc_changed(None, self.strips_list_widgets[0].get_ssid(),
-                                True)  # Force bank selection because if Ardour has already selected the first ssid the OSC feedback will not be send
+        # Force bank selection because if Ardour has already selected the first ssid the OSC feedback will not be send
+        self.select_osc_changed(None, self.strip_table.get_strip_ssid(0), True)
         self.table_bank.set_sensitive(True)
-
-    def on_meter_refresh_timeout(self):
-        for stripCtl in self.strips_list_widgets:
-            stripCtl.refresh_meter()
-        GLib.timeout_add(self.timeout_meter_interval, self.on_meter_refresh_timeout)
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
@@ -324,20 +248,18 @@ class ControllerGUI(Gtk.Window):
         self.stack.set_visible_child_full("strip_list", Gtk.StackTransitionType.SLIDE_DOWN)
 
     def eBtn_next_clicked(self, widget):
-        if self.last_selected_stripWidget != None:
-            next_select = self.last_selected_stripWidget + 1
-            if next_select == len(self.strips_list_widgets):
+        if self.strip_table.get_current_selected_strip_index() != None:
+            next_select = self.strip_table.get_current_selected_strip_index() + 1
+            if next_select == self.strip_table.get_number_of_strips():
                 next_select = 0
-            self.safe_strip_select(self.strips_list_widgets[next_select].get_ssid())
-            self.last_selected_stripWidget = next_select
+            self.safe_strip_select(self.strip_table.get_strip_ssid(next_select))
 
     def eBtn_prev_clicked(self, widget):
-        if self.last_selected_stripWidget != None:
-            next_select = self.last_selected_stripWidget - 1
+        if self.strip_table.get_current_selected_strip_index() != None:
+            next_select = self.strip_table.get_current_selected_strip_index() - 1
             if next_select == -1:
-                next_select = len(self.strips_list_widgets) - 1
-            self.safe_strip_select( self.strips_list_widgets[next_select].get_ssid())
-            self.last_selected_stripWidget = next_select
+                next_select = self.strip_table.get_number_of_strips() - 1
+            self.safe_strip_select(self.strip_table.get_strip_ssid(next_select))
 
     def edit_phaseBtn_clicked(self, widget):
         liblo.send(self.target, "/select/polarity", int(not self.eBtn_phase.get_active_state()))
@@ -368,7 +290,7 @@ class ControllerGUI(Gtk.Window):
 
     def edit_fader_automation_changed(self, widget, value):
         liblo.send(self.target, "/select/fader/automation", value)
-    #TODO continue implementing the signals for the rest of the buttons
+    #TODO continue implementing the signals for the rest of the edit-mode buttons
 
     #OSC receive commands for the edit mode
     def select_name_osc_changed(self, widget, value):
@@ -392,7 +314,7 @@ class ControllerGUI(Gtk.Window):
     def select_soloLock_osc_changed(self, widget, value):
         self.eBtn_soloLock.set_active_state(bool(value))
 
-    def select_monitorIn_osc_changed(self, widget, value): #TODO k passa si activo monIn in monDisk a la vegada?
+    def select_monitorIn_osc_changed(self, widget, value):
         self.eBtn_monitorIn.set_active_state(bool(value))
 
     def select_monitorDisk_osc_changed(self, widget, value):
@@ -432,10 +354,9 @@ class ControllerGUI(Gtk.Window):
 
     #Safe select to handle state of stereo panners properly and unificate all calls to /strip/select
     def safe_strip_select(self, ssid):
-        if self.last_selected_ssid != ssid:
+        if self.strip_table.get_current_selected_strip_ssid() != ssid:
             self.ePanner.set_panner_width(1.0) #If selected channel changed start assuiming full stereo width since mono and balance mode do not feedback this command
             self.faderCtl.move_single_pan_width(1.0) #set fader width at center
-        self.last_selected_ssid = ssid
         liblo.send(self.target, "/strip/select", ssid, 1)
 
     # Debug method to insert a line of ##### in terminal
@@ -480,9 +401,6 @@ class ControllerGUI(Gtk.Window):
             print(str(err))
             sys.exit()
 
-        #Keep track of the last selected ssid
-        self.last_selected_ssid = -1
-
         self.vbox_top = Gtk.VBox()
 
         # Build the header bar
@@ -521,21 +439,18 @@ class ControllerGUI(Gtk.Window):
         self.stack = Gtk.Stack()
         self.stack.set_transition_duration(250)
 
-        # Build the central part of the gui, all strips list
-        self.last_selected_stripWidget = None #keep track of the last selected ssid
-        self.strips_list_widgets = []
-        self.strips_ssid_id_dict = dict()
-        self.number_of_banks = 0
-        self.current_selected_strip_widget = None
-        self.current_selected_bank = None
-
-        self.scroll_tbl = Gtk.ScrolledWindow()
-        self.table = Gtk.Label(label="Strip list is empty, click the refresh button to start DAW comunication")
-        self.viewport_table = Gtk.Viewport()
-        self.viewport_table.add(self.table)
-        self.scroll_tbl.add(self.viewport_table)
-        self.vbox_top.pack_start(self.scroll_tbl, expand=True, fill=True, padding=0)
-        self.scroll_tbl.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        #Add the strip select table
+        self.strip_table = stripTable.StripTable(8, self.PIXELS_X_SECOND)
+        self.strip_table.connect("bank_channel_fader_changed", self.bank_channel_fader_changed)
+        self.strip_table.connect("bank_channel_fader_gain_changed", self.bank_channel_fader_gain_changed)
+        self.strip_table.connect("bank_channel_solo_changed", self.bank_channel_solo_changed)
+        self.strip_table.connect("bank_channel_mute_changed", self.bank_channel_mute_changed)
+        self.strip_table.connect("bank_channel_rec_changed", self.bank_channel_rec_changed)
+        self.strip_table.connect("bank_channel_select_changed", self.bank_channel_select_changed)
+        self.strip_table.connect("bank_channel_ssid_name_changed", self.bank_channel_ssid_name_changed)
+        self.strip_table.connect("bank_channel_type_changed", self.bank_channel_type_changed)
+        self.strip_table.connect("strip_select_changed", self.strip_select_changed)
+        self.vbox_top.pack_start(self.strip_table, expand=True, fill=True, padding=0)
 
         #Add a separator
         self.bank_separator = Gtk.Image.new_from_file("icons/bank_spacer.png")
@@ -573,9 +488,6 @@ class ControllerGUI(Gtk.Window):
         self.faderCtl.connect("pan_width_single_mode_untouched", self.pan_width_single_mode_untouched)
         self.faderCtl.connect("send_single_mode_changed", self.send_single_mode_changed)
         self.faderCtl.connect("send_single_mode_untouched", self.send_single_mode_untouched)
-
-
-        #TODO set the correct state on buttons of select mode (edit and close)
 
         # Refine intial bank widgets state
         for i in range(0, 8):
@@ -737,7 +649,7 @@ class ControllerGUI(Gtk.Window):
         #Sends
         self.eSendsCtl = []
         for i in range(0,4):
-            self.eSendsCtl.append(selectFaderCtlWidget.SelectFaderCtlWidget("Send " + str(i))) #TODO change the widget to allo setting the name from ardour
+            self.eSendsCtl.append(selectFaderCtlWidget.SelectFaderCtlWidget("Send " + str(i))) #TODO change the widget to allow setting the name from ardour
             self.table_bank_edit.attach(self.eSendsCtl[i], 4 + i, 0, 1, 1)
 
         # Connect OSC message received signals
@@ -777,10 +689,6 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_fader_automation_changed", self.select_fader_automation_changed)
         #TODO continue connecting the rest of edit mode osc messages
 
-
-        # Meters, global refress timer
-        self.timeout_meter_interval = round(1000.0 / self.PIXELS_X_SECOND)  # Timeout interval in milliseconds
-        GLib.timeout_add(self.timeout_meter_interval, self.on_meter_refresh_timeout)
 
         self.set_size_request(window_width, window_height)
         self.show_all()

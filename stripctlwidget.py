@@ -106,6 +106,9 @@ class StripCtlWidget(customframewidget.CustomFrame):
                         StripEnum.MidiBus: 'Midi Bus',
                         StripEnum.AuxBus: 'Aux Bus',
                         StripEnum.VCA: 'VCA'}
+        if self.type == StripEnum.Empty:
+           self.set_ssid_name(None, "")
+
         if self.ssid is None:
             self.lbl_strip_type.set_label("")
             self.lbl_gain.set_label("")

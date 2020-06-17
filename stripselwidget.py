@@ -18,14 +18,15 @@ MAX_TRACK_NAME_LENGTH = 15
 class StripSelWidget(Gtk.EventBox):
     __gsignals__ = {
         'strip_selected': (GObject.SIGNAL_RUN_LAST, None,
-                           (int, int))
+                           (int, ))
     }
 
-    def __init__(self, index, issid, ibank, sstripname, istriptype, mute, solo, inputs, outputs, rec=None):
+    def __init__(self, index, issid, ibank,  ibank_index, sstripname, istriptype, mute, solo, inputs, outputs, rec=None):
         super(StripSelWidget, self).__init__()
-        self.index = index
-        self.ssid = issid
-        self.ibank = ibank
+        self.index = index #The position in the strip table
+        self.ssid = issid #The Ardour ssid
+        self.ibank = ibank #The bank index at which this strip belongs
+        self.ibank_index = ibank_index #The position of the strip in a bank
         if len(sstripname) > MAX_TRACK_NAME_LENGTH:
             self.stripname = sstripname[:MAX_TRACK_NAME_LENGTH]  + "..."
         else:
@@ -81,7 +82,7 @@ class StripSelWidget(Gtk.EventBox):
 
     def button_press(self, widget, event):
         if event.button == 1:
-            self.emit('strip_selected', self.ssid, self.ibank)
+            self.emit('strip_selected', self.ssid)
 
     def get_index(self):
         return self.index
@@ -89,8 +90,17 @@ class StripSelWidget(Gtk.EventBox):
     def get_ssid(self):
         return self.ssid
 
+    def get_name(self):
+        return self.stripname
+
+    def get_type(self):
+        return self.type
+
     def get_bank(self):
         return self.ibank
+
+    def get_bank_index(self):
+        return self.ibank_index
 
     def set_selected(self, select):
         self.selected = select
