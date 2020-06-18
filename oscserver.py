@@ -108,6 +108,24 @@ class OSCServer(GObject.GObject):
         'select_fader_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
                                             (int,)),
 
+        'select_send_name_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                            (int, str)),
+
+        'select_send_enable_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                     (int, bool)),
+
+        'select_send_fader_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                       (int, float)),
+
+        'select_send_gain_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                      (int, float)),
+
+        'send_reply_bus': (GObject.SIGNAL_RUN_LAST, None,
+                           (int, str, int, )),  # origin ssid, target bus name, send ID
+
+        'send_reply_end': (GObject.SIGNAL_RUN_LAST, None,
+                           ()),
+
         'unknown_message': (GObject.SIGNAL_RUN_LAST, None,
                             (str,))
 
@@ -145,7 +163,11 @@ class OSCServer(GObject.GObject):
         self.OSCReceiver.add_method("/select/pan_stereo_width", 'f', self.select_pan_width_callback)
         self.OSCReceiver.add_method("/select/trimdB/automation", 'i', self.select_trimdB_automation_callback)
         self.OSCReceiver.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
-        self.OSCReceiver.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
+        self.OSCReceiver.add_method("/select/send_name", 'is', self.select_send_name_callback)
+        self.OSCReceiver.add_method("/select/send_fader", 'if', self.select_send_fader_callback)
+        self.OSCReceiver.add_method("/select/send_gain", 'if', self.select_send_gain_callback)
+        self.OSCReceiver.add_method("/select/send_enable", 'if', self.select_send_enable_callback)
+        self.OSCReceiver.add_method("/strip/sends", None, self.sends_query_callback)
 
         #TODO add send callbacks
         self.OSCReceiver.add_method(None, None, self.fallback)
@@ -277,7 +299,29 @@ class OSCServer(GObject.GObject):
         i = int(args[0])
         GObject.idle_add(self.emit, 'select_trimdB_automation_changed', i)
 
-    # TODO add send handlers here!
+    def select_send_name_callback(self, path, args):
+        i, name = args
+        GObject.idle_add(self.emit, 'select_send_name_changed', i, name)
+
+    def select_send_fader_callback(self, path, args):
+        i, f = args
+        GObject.idle_add(self.emit, 'select_send_fader_changed', i, f)
+
+    def select_send_gain_callback(self, path, args):
+        i, f = args
+        GObject.idle_add(self.emit, 'select_send_gain_changed', i, f)
+
+    def select_send_enable_callback(self, path, args):
+        i, b = args
+        GObject.idle_add(self.emit, 'select_send_enable_changed', i, b)
+
+    def sends_query_callback(self, path, args):
+        strip_ssid = int(args[0]) #Get strip ssid
+        for i in range(0, (len(args) - 1) // 5):
+            bus_name = str(args[2 + (i * 5)])
+            send_ID = int(args[3 + (i * 5)])
+            GObject.idle_add(self.emit, 'send_reply_bus', strip_ssid, bus_name, send_ID)
+        GObject.idle_add(self.emit, 'send_reply_end')
 
     def fallback(self, path, args, types, src):
         str_types = ""

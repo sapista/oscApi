@@ -37,7 +37,7 @@ class StripTable(Gtk.ScrolledWindow):
                                  (int,))
     }
 
-    def __init__(self, bank_size, meter_pixels_x_seconds = None):
+    def __init__(self, bank_size, meter_pixels_x_seconds = None, is_send = False):
         super(StripTable, self).__init__()
 
         self.strips_list_widgets = [] #Stores the list of select widgets
@@ -46,6 +46,7 @@ class StripTable(Gtk.ScrolledWindow):
         self.bank_size = bank_size
         self.current_selected_strip_widget = None
         self.current_selected_bank = None
+        self.send_mode = is_send
 
         self.table = Gtk.Label(label="Strip list is empty, click the refresh button to start DAW comunication")
         self.viewport_table = Gtk.Viewport()
@@ -73,7 +74,20 @@ class StripTable(Gtk.ScrolledWindow):
 
     def append_strip(self, ssid, name, type, mute, solo, rec, inputs, outputs):
         self.strips_ssid_id_dict[ssid] = len(self.strips_list_widgets)
-        self.strips_list_widgets.append(StripSelWidget(len(self.strips_list_widgets),
+        if self.send_mode:
+            self.strips_list_widgets.append(StripSelWidget(len(self.strips_list_widgets),
+                                                           ssid,
+                                                           len(self.strips_list_widgets) // self.bank_size,
+                                                           len(self.strips_list_widgets) % self.bank_size,
+                                                           name,
+                                                           type,
+                                                           mute,
+                                                           solo,
+                                                           inputs,
+                                                           outputs,
+                                                           rec, True))
+        else:
+            self.strips_list_widgets.append(StripSelWidget(len(self.strips_list_widgets),
                                                                       ssid,
                                                                       len(self.strips_list_widgets) // self.bank_size,
                                                                       len(self.strips_list_widgets) % self.bank_size,
@@ -97,6 +111,7 @@ class StripTable(Gtk.ScrolledWindow):
         self.bank_strip_id_list = [] #Clear the bank id list
         self.current_selected_strip_widget = None
         self.current_selected_bank = None
+        #if self.viewport_table.get_child() is not None: #TODO remove me!
         self.viewport_table.remove(self.table)
 
     def fill_strips(self):
@@ -125,15 +140,24 @@ class StripTable(Gtk.ScrolledWindow):
         else:
             self.clear_strips()
 
+    def set_strip_name(self, ssid, name):
+        if ssid in self.strips_ssid_id_dict:
+            idx = self.strips_ssid_id_dict[ssid]
+            self.strips_list_widgets[idx].set_name(name)
+            if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
+                self.emit('bank_channel_ssid_name_changed', self.strips_list_widgets[idx].get_bank_index(), ssid, name)
+
     def set_fader(self, ssid, value):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
+            self.strips_list_widgets[idx].set_fader(value)  # Store fader, used in send mode
             if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
                 self.emit('bank_channel_fader_changed', self.strips_list_widgets[idx].get_bank_index(), value)
 
     def set_fader_gain(self, ssid, value):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
+            self.strips_list_widgets[idx].set_fader_gain(value)  # Store fader gain, used in send mode
             if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
                 self.emit('bank_channel_fader_gain_changed', self.strips_list_widgets[idx].get_bank_index(), value)
 
@@ -163,10 +187,22 @@ class StripTable(Gtk.ScrolledWindow):
             idx = self.strips_ssid_id_dict[ssid]
             self.strips_list_widgets[idx].set_meter(value)
 
+    def hide_strip(self, ssid):
+        if ssid in self.strips_ssid_id_dict:
+            idx = self.strips_ssid_id_dict[ssid]
+            self.strips_list_widgets[idx].hide()
+
+    def show_strip(self, ssid):
+        if ssid in self.strips_ssid_id_dict:
+            idx = self.strips_ssid_id_dict[ssid]
+            self.strips_list_widgets[idx].show()
+
     def strip_select(self, ssid, value):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
-            self.strips_list_widgets[idx].set_selected(value)
+
+            if not self.send_mode:
+                self.strips_list_widgets[idx].set_selected(value)
 
             # Check if bank has changed
             if value:  # Do not refresh the bank if selection is false
@@ -177,6 +213,8 @@ class StripTable(Gtk.ScrolledWindow):
                         for i in self.bank_strip_id_list[self.current_selected_bank]:
                             if i is not None:
                                 self.strips_list_widgets[i].set_bank_selected(False)
+                                if self.send_mode:
+                                    self.strips_list_widgets[i].set_selected(False)
 
                     self.current_selected_bank = self.strips_list_widgets[idx].get_bank()
 
@@ -189,27 +227,46 @@ class StripTable(Gtk.ScrolledWindow):
                                 exit("FATAL ERROR: bank index lost!")
 
                             self.strips_list_widgets[strip_index].set_bank_selected(True)
+                            if self.send_mode:
+                                self.strips_list_widgets[strip_index].set_selected(True)
 
                             self.emit('bank_channel_ssid_name_changed',
                                       i,
                                       self.strips_list_widgets[strip_index].get_ssid(),
                                       self.strips_list_widgets[strip_index].get_name())
+
                             self.emit('bank_channel_type_changed',
                                       i,
                                       self.strips_list_widgets[strip_index].get_type())
 
-                            self.emit('bank_channel_solo_changed',
-                                      i,
-                                      self.strips_list_widgets[strip_index].get_solo())
                             self.emit('bank_channel_mute_changed',
                                       i,
                                       self.strips_list_widgets[strip_index].get_mute())
 
-                            if (self.strips_list_widgets[strip_index].get_type() is StripEnum.AudioTrack) or (
-                                    self.strips_list_widgets[strip_index].get_type() is StripEnum.MidiTrack):
-                                self.emit('bank_channel_rec_changed',
+                            if not self.send_mode:
+                                #In send mode we do not send solo and rec
+                                self.emit('bank_channel_solo_changed',
                                           i,
-                                          self.strips_list_widgets[strip_index].get_rec())
+                                          self.strips_list_widgets[strip_index].get_solo())
+
+
+                                if (self.strips_list_widgets[strip_index].get_type() is StripEnum.AudioTrack) or (
+                                        self.strips_list_widgets[strip_index].get_type() is StripEnum.MidiTrack):
+                                    self.emit('bank_channel_rec_changed',
+                                              i,
+                                              self.strips_list_widgets[strip_index].get_rec())
+
+                            elif self.strips_list_widgets[strip_index].get_fader() is not None:
+                                #In send mode we need to send fader values
+                                self.emit('bank_channel_fader_changed',
+                                          i,
+                                          self.strips_list_widgets[strip_index].get_fader())
+
+                                self.emit('bank_channel_fader_gain_changed',
+                                          i,
+                                          self.strips_list_widgets[strip_index].get_fader_gain())
+
+
 
                         else:
                             self.emit('bank_channel_type_changed', i, 0)

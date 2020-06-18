@@ -21,22 +21,21 @@ class StripSelWidget(Gtk.EventBox):
                            (int, ))
     }
 
-    def __init__(self, index, issid, ibank,  ibank_index, sstripname, istriptype, mute, solo, inputs, outputs, rec=None):
+    def __init__(self, index, issid, ibank,  ibank_index, sstripname, istriptype, mute, solo, inputs, outputs, rec=None, isSend = False):
         super(StripSelWidget, self).__init__()
         self.index = index #The position in the strip table
         self.ssid = issid #The Ardour ssid
         self.ibank = ibank #The bank index at which this strip belongs
         self.ibank_index = ibank_index #The position of the strip in a bank
-        if len(sstripname) > MAX_TRACK_NAME_LENGTH:
-            self.stripname = sstripname[:MAX_TRACK_NAME_LENGTH]  + "..."
-        else:
-            self.stripname = sstripname
         self.lbl_name = Gtk.Label()
-        self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
+        self.set_name(sstripname)
         self.type = istriptype
         self.MFrame = customframewidget.CustomFrame(self.type)
         self.inputs = inputs
         self.outputs = outputs
+        self.isSend = isSend
+        self.fader_value = None #Used only in send mode
+        self.fader_gain_value = None  # Used only in send mode
 
         # Set strip type label
         dirstriptype = {StripEnum.Empty: '',
@@ -55,21 +54,29 @@ class StripSelWidget(Gtk.EventBox):
 
         # Solo, mute rec labels
         self.hbox_smr = Gtk.HBox()
-        self.LED_solo = LEDWidget.LEDWidget("Solo", "#00FF00")
-        self.LED_solo.set_value(solo)
-        self.hbox_smr.pack_start(self.LED_solo, expand=True, fill=True, padding=0)
-        self.LED_mute = LEDWidget.LEDWidget("Mute", "#FFFF00")
-        self.LED_mute.set_value(mute)
-        self.hbox_smr.pack_start(self.LED_mute, expand=True, fill=True, padding=0)
-        if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-            self.LED_rec = LEDWidget.LEDWidget("Rec", "#FF0000")
-            self.LED_rec.set_value(rec)
-            self.hbox_smr.pack_start(self.LED_rec, expand=True, fill=True, padding=0)
+
+        if not self.isSend:
+            self.LED_solo = LEDWidget.LEDWidget("Solo", "#00FF00")
+            self.LED_solo.set_value(solo)
+            self.hbox_smr.pack_start(self.LED_solo, expand=True, fill=True, padding=0)
+            self.LED_mute = LEDWidget.LEDWidget("Mute", "#FFFF00")
+            self.LED_mute.set_value(mute)
+            self.hbox_smr.pack_start(self.LED_mute, expand=True, fill=True, padding=0)
+            if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
+                self.LED_rec = LEDWidget.LEDWidget("Rec", "#FF0000")
+                self.LED_rec.set_value(rec)
+                self.hbox_smr.pack_start(self.LED_rec, expand=True, fill=True, padding=0)
+        else:
+            #Using the mute LED as active, so it will work reversed (Mute = Active)
+            self.LED_mute = LEDWidget.LEDWidget("Active", "#00FF00")
+            self.LED_mute.set_value(mute)
+            self.hbox_smr.pack_start(self.LED_mute, expand=True, fill=True, padding=0)
 
         self.vbox = Gtk.VBox()
         self.vbox.pack_start(self.lbl_name, expand=True, fill=True, padding=0)
-        self.vbox.pack_start(self.lbl_type, expand=True, fill=True, padding=0)
-        self.vbox.pack_start(self.meter, expand=True, fill=True, padding=0)
+        if not isSend:  # We do not need label for track type and meters on sends
+            self.vbox.pack_start(self.lbl_type, expand=True, fill=True, padding=0)
+            self.vbox.pack_start(self.meter, expand=True, fill=True, padding=0)
         self.vbox.pack_start(self.hbox_smr, expand=True, fill=True, padding=0)
         self.MFrame.add(self.vbox)
         self.add(self.MFrame)
@@ -101,6 +108,14 @@ class StripSelWidget(Gtk.EventBox):
 
     def get_bank_index(self):
         return self.ibank_index
+
+    def set_name(self, strip_name):
+        if len(strip_name) > MAX_TRACK_NAME_LENGTH:
+            self.stripname = strip_name[:MAX_TRACK_NAME_LENGTH] + "..."
+        else:
+            self.stripname = strip_name
+
+        self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
 
     def set_selected(self, select):
         self.selected = select
@@ -142,3 +157,14 @@ class StripSelWidget(Gtk.EventBox):
     def refresh_meter(self):
         self.meter.refresh()
 
+    def set_fader(self, value):
+        self.fader_value = value
+
+    def set_fader_gain(self, value):
+        self.fader_gain_value = value
+
+    def get_fader(self):
+        return  self.fader_value
+
+    def get_fader_gain(self):
+        return  self.fader_gain_value

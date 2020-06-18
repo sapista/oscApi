@@ -18,6 +18,7 @@ import customframewidget
 import bankAvrController
 import selectFaderCtlWidget
 import stripTable
+import stripTypes
 
 """ ControllerGUI class
 This class implements a gtk GUI for sending osc messages using the liblo.send() method.
@@ -118,8 +119,11 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def send_single_mode_changed(self, event, channel, value):
-        #TODO how to send a send value...
-        #liblo.send(self.target, "/select/sendXXXX", value)
+        if self.sends_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
+            selSSID = self.eSendsCtl[channel].get_sendID()
+            if selSSID is not None:
+                #liblo.send(self.target, "/select/send/touch", selSSID, 1) #TODO how to send touch in sends?
+                liblo.send(self.target, "/select/send_fader", selSSID, value)
         return True
 
     def send_single_mode_untouched(self, event, channel):
@@ -208,6 +212,13 @@ class ControllerGUI(Gtk.Window):
         if bvalue:
             self.eLbl_ssid.set_markup("<span weight='bold' size='xx-large' color='white'>("+str(ichannel)+")</span>")
 
+            # Query sends, instead of quering just hide all strips and let each send command to show its strip
+            for i in range(0, self.sends_table.get_number_of_strips()):
+                self.sends_table.hide_strip(i + 1)
+                self.sends_table.set_strip_name(self.sends_table.get_strip_ssid(i), "") #Using empty name to hide unused sends
+
+            self.sends_table.strip_select(1,True) #Ensuer to start always selecting the first bank
+
     def meter_osc_changed(self, widget, ichannel, fvalue):
         # print ("meter on channel '%d' = '%s'" % (ichannel, fvalue))
         self.strip_table.set_meter(ichannel, fvalue)
@@ -252,6 +263,7 @@ class ControllerGUI(Gtk.Window):
             next_select = self.strip_table.get_current_selected_strip_index() + 1
             if next_select == self.strip_table.get_number_of_strips():
                 next_select = 0
+
             self.safe_strip_select(self.strip_table.get_strip_ssid(next_select))
 
     def eBtn_prev_clicked(self, widget):
@@ -259,6 +271,7 @@ class ControllerGUI(Gtk.Window):
             next_select = self.strip_table.get_current_selected_strip_index() - 1
             if next_select == -1:
                 next_select = self.strip_table.get_number_of_strips() - 1
+
             self.safe_strip_select(self.strip_table.get_strip_ssid(next_select))
 
     def edit_phaseBtn_clicked(self, widget):
@@ -290,7 +303,9 @@ class ControllerGUI(Gtk.Window):
 
     def edit_fader_automation_changed(self, widget, value):
         liblo.send(self.target, "/select/fader/automation", value)
-    #TODO continue implementing the signals for the rest of the edit-mode buttons
+
+    def edit_send_active_changed(self, widget, sendID, value):
+        liblo.send(self.target, "/select/send_enable", sendID, int(value))
 
     #OSC receive commands for the edit mode
     def select_name_osc_changed(self, widget, value):
@@ -344,13 +359,43 @@ class ControllerGUI(Gtk.Window):
         self.faderCtl.move_single_pan_width(value)
         self.ePanner.set_panner_width(value)
 
-    def select_trimdB_automation_changed(self, widget, value):
+    def select_trimdB_automation_osc_changed(self, widget, value):
         self.eTrimCtl.set_automation_mode(value)
 
-    def select_fader_automation_changed(self, widget, value):
+    def select_fader_automation_osc_changed(self, widget, value):
         self.eFaderCtl.set_automation_mode(value)
 
-    #TODO continue implementing the handlers for the rest of the edit mdoe widgets, sends, automation states, plugins...
+    def select_send_name_osc_changed(self, widget, send_id, send_name):
+        self.sends_table.set_strip_name(send_id, send_name)
+        self.sends_table.show_strip(send_id)
+
+    def select_send_enable_osc_changed(self, widget, send_id, send_enabled):
+        self.sends_table.set_mute(send_id, send_enabled)
+
+    def select_send_fader_osc_changed(self, widget, send_id, fader_value):
+        self.sends_table.set_fader(send_id, fader_value)
+
+    def select_send_gain_osc_changed(self, widget, send_id, gain_value):
+        self.sends_table.set_fader_gain(send_id, gain_value)
+
+    def bank_send_active_changed(self, widget, index, value):
+        self.eSendsCtl[index].set_send_active(value)
+
+    def bank_send_fader_changed(self, widget, index, value):
+        self.faderCtl.move_single_send(index, value)
+
+    def bank_send_fader_gain_changed(self, widget, index, value):
+        self.eSendsCtl[index].set_gain_label(value)
+
+    def bank_send_ssid_name_changed(self, widget, index, ssid, name):
+        if name == "": #Using empty name to hide unused sends
+            self.eSendsCtl[index].hide()
+            self.eSendsCtl[index].set_sendID(None)
+            self.faderCtl.move_single_send(index, 0.0)
+        else:
+            self.eSendsCtl[index].show()
+            self.eSendsCtl[index].set_sendID(ssid)
+            self.eSendsCtl[index].set_name_label(name)
 
     #Safe select to handle state of stereo panners properly and unificate all calls to /strip/select
     def safe_strip_select(self, ssid):
@@ -621,6 +666,27 @@ class ControllerGUI(Gtk.Window):
         self.eBtn_monitorIn.connect("clicked", self.eBtn_monIn_clicked)
         self.eBtn_monitorDisk.connect("clicked", self.eBtn_monDisk_clicked)
 
+        # Add the sends select table
+        self.eFrame_sends = customframewidget.CustomFrame(stripselwidget.StripEnum.Empty)
+        self.eVBox_sends = Gtk.VBox()
+        self.eVBox_sends.set_border_width(2)
+        self.eFrame_sends.add(self.eVBox_sends)
+        self.eLbl_Sends = Gtk.Label()
+        self.eLbl_Sends.set_markup("<span weight='bold' size='xx-large' color='white'>Sends</span>")
+        self.eVBox_sends.pack_start(self.eLbl_Sends, expand=False, fill=False, padding=0)
+        self.sends_table = stripTable.StripTable(4, None, True)
+        self.sends_table.clear_strips()
+        for i in range(0, 32):
+            self.sends_table.append_strip(i+1, "###", stripTypes.StripEnum.AudioBus,
+                                          False, False, False, 1, 1)
+        self.sends_table.fill_strips()
+        self.sends_table.connect("bank_channel_mute_changed", self.bank_send_active_changed)
+        self.sends_table.connect("bank_channel_fader_changed", self.bank_send_fader_changed)
+        self.sends_table.connect("bank_channel_fader_gain_changed", self.bank_send_fader_gain_changed)
+        self.sends_table.connect("bank_channel_ssid_name_changed", self.bank_send_ssid_name_changed)
+        self.sends_table.set_size_request(638, -1)
+        self.eVBox_sends.pack_start(self.sends_table, expand=True, fill=True, padding=0)
+        self.eHBox_edit.pack_end(self.eFrame_sends, expand=False, fill=True, padding=0)
 
         #Add spacer
         self.bank_separator_edit = Gtk.Image.new_from_file("icons/bank_spacer.png")
@@ -648,8 +714,10 @@ class ControllerGUI(Gtk.Window):
 
         #Sends
         self.eSendsCtl = []
-        for i in range(0,4):
-            self.eSendsCtl.append(selectFaderCtlWidget.SelectFaderCtlWidget("Send " + str(i))) #TODO change the widget to allow setting the name from ardour
+        for i in range(0, 4):
+            self.eSendsCtl.append(selectFaderCtlWidget.SelectFaderCtlWidget(str(i), isSend = True))
+            #TODO connect signals! Automation state
+            self.eSendsCtl[i].connect("send_active_changed", self.edit_send_active_changed)
             self.table_bank_edit.attach(self.eSendsCtl[i], 4 + i, 0, 1, 1)
 
         # Connect OSC message received signals
@@ -685,14 +753,20 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_fader_gain_changed", self.select_fader_gain_osc_changed)
         self.oscserver.connect("select_pan_pos_changed", self.select_panPos_osc_changed)
         self.oscserver.connect("select_pan_width_changed", self.select_panWidth_osc_changed)
-        self.oscserver.connect("select_trimdB_automation_changed", self.select_trimdB_automation_changed)
-        self.oscserver.connect("select_fader_automation_changed", self.select_fader_automation_changed)
-        #TODO continue connecting the rest of edit mode osc messages
-
+        self.oscserver.connect("select_trimdB_automation_changed", self.select_trimdB_automation_osc_changed)
+        self.oscserver.connect("select_fader_automation_changed", self.select_fader_automation_osc_changed)
+        self.oscserver.connect("select_send_name_changed", self.select_send_name_osc_changed)
+        self.oscserver.connect("select_send_enable_changed", self.select_send_enable_osc_changed)
+        self.oscserver.connect("select_send_fader_changed", self.select_send_fader_osc_changed)
+        self.oscserver.connect("select_send_gain_changed", self.select_send_gain_osc_changed)
 
         self.set_size_request(window_width, window_height)
         self.show_all()
         self.show()
+
+        #Start with all send strips hidden, must be donw here after the show_all() of the main screen
+        for i in range(0, self.sends_table.get_number_of_strips()):
+            self.sends_table.hide_strip(i+1)
 
         # Set theme
         screen = Gdk.Screen.get_default()
