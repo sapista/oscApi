@@ -3,7 +3,70 @@
 
 > VCA
 
+################################################################################################################
+# Direct Access Physical Buttons
+/access_action/Common/toggle-editor-and-mixer #toggle screen mixer/editor
+/access_action/Editor/set-playhead #Same as keyboard P
 
+Keyboard Ctrl
+Keyboard Alt
+Keyboard Shift
+
+/rec_enable_toggle #Global REC toggle
+/toggle_roll #Toggles between play and stop, not stopping transport in Ardour 6.0 (Bug reported)
+/loop_toggle #Toggle loop mode on and off, not working in Ardour 6.0, further testing needed.
+
+/access_action/Region/toggle-region-lock #lock and unlocks currently selected region
+/access_action/Editor/split-region #Split the selected region, identical as S
+
+/add_marker #Adds marker to the current transport position
+/next_marker  #Move playhead to next marker
+/prev_marker  #Move playhead to previous marker
+/goto_start #Move playhead to start of session
+/goto_end 	#Move playhead to end of session
+
+/access_action/Editor/editor-copy	Copy
+/access_action/Editor/editor-cut	Cut
+/access_action/Editor/editor-delete	Delete
+/access_action/Editor/editor-paste	Paste
+
+/undo #Ctrl-Z
+/redo #Ctrl-shift-Z
+
+/jog #Multifunction encoder with various mode selectable trough touch UI (see Jog modes in the next section)
+
+(21 buttons + 2 signals for the Jog encoder)
+
+# Direct Access Touch Screen Buttons
+/access_action/MouseMode/set-mouse-mode-audition	Audition Tool
+/access_action/MouseMode/set-mouse-mode-content	Content Tool
+/access_action/MouseMode/set-mouse-mode-cut	Cut Tool
+/access_action/MouseMode/set-mouse-mode-draw	Note Drawing Tool
+/access_action/MouseMode/set-mouse-mode-object	Object Tool
+/access_action/MouseMode/set-mouse-mode-object-range	Smart Mode
+/access_action/MouseMode/set-mouse-mode-range	Range Tool
+/access_action/MouseMode/set-mouse-mode-timefx
+
+/cancel_all_solos #Cancel All Solos/PFLs/AFLs, This command is not working in Ardour 6.0, futher testing is needed
+/toggle_click 	#Toggle metronome click on and off
+
+
+/save_state #equivalent to control+s or session>>save
+
+/jog encoder modes
+    # as a jog wheel issuing the command /jog_mode 0
+    # scrub mode (read updated Ardour documentation)
+    # Region gain control use the wheel to send the following commands for the selected region:
+        /access_action/Region/boost-region-gain
+        /access_action/Region/cut-region-gain
+
+
+#Discarded commands (the ones I'm not going to implement)
+/access_action/Editor/cycle-snap-mode #Alternates between SNAP vs NO_SNAP (same as holding the Alt. Key)
+/access_action/Editor/snap-off #Disable grid snap, equivalent to cycle-snap-mode
+/access_action/Editor/snap-normal #Snap to grid, deprecated in Ardour 6.0
+/access_action/Editor/snap-magnetic #Snap magnetic mode, deprecated in Ardour 6.0
+/access_action/Editor/cycle-edit-mode #This cycles the combo of edit mode: Slide, Ripple, Lock. Useless in the control surface I can do it with mouse
 
 ################################################################################################################
 DEBUG OSC

@@ -47,11 +47,41 @@ class ControllerGUI(Gtk.Window):
     def destroy(self, widget):
         Gtk.main_quit()
 
-    def btn_test_clicked(self, widget):
-        if self.stack.get_visible_child_name() == "edit_mode":
-            self.stack.set_visible_child_full("strip_list", Gtk.StackTransitionType.SLIDE_DOWN)
-        else:
-            self.stack.set_visible_child_full("edit_mode", Gtk.StackTransitionType.SLIDE_UP)
+    def btn_close_clicked(self, widget):
+        self.close()
+
+    def btn_session_save_clicked(self, widget):
+        liblo.send(self.target, "/save_state")
+
+    def btn_smart_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-object-range")
+
+    def btn_object_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-object")
+
+    def btn_range_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-range")
+
+    def btn_cut_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-cut")
+
+    def btn_audition_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-audition")
+
+    def btn_timefx_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-timefx")
+
+    def btn_draw_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-draw")
+
+    def btn_content_mode_clicked(self, widget):
+        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-content")
+
+    def btn_metronome_clicked(self, widget):
+        liblo.send(self.target, "/toggle_click")
+
+    def btn_solo_cancel_clicked(self, widget):
+        liblo.send(self.target, "/cancel_all_solos") #TODO, not working in Ardour 6.0
 
     def btn_playStop_clicked(self, widget):
         liblo.send(self.target, "/toggle_roll")
@@ -83,52 +113,64 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def trim_single_mode_changed(self, event, value):
+        # TODO enable touch automation when available in Ardour
+        # liblo.send(self.target, "/select/trimdB/touch", 1)
         liblo.send(self.target, "/select/trimdB", value)
         return True
 
     def trim_single_mode_untouched(self, event):
-        #TODO how to send a select automation untouch event trough OSC???
-        #liblo.send(self.target, "/select/XXXXXXX", 0)
+        # TODO enable touch automation when available in Ardour
+        #liblo.send(self.target, "/select/trimdB/touch", 0)
         return True
 
     def fader_single_mode_changed(self, event, value):
+        liblo.send(self.target, "/select/fader/touch", 1)
         liblo.send(self.target, "/select/fader", value)
         return True
 
     def fader_single_mode_untouched(self, event):
-        #TODO how to send a select automation untouch event trough OSC???
-        #liblo.send(self.target, "/select/XXXXXXX", 0)
+        liblo.send(self.target, "/select/fader/touch", 0)
         return True
 
     def pan_pos_single_mode_changed(self, event, value):
+        # TODO enable touch automation when available in Ardour
+        # liblo.send(self.target, "/select/pan_stereo_position/touch", 1)
         liblo.send(self.target, "/select/pan_stereo_position", value)
         return True
 
     def pan_pos_single_mode_untouched(self, event):
-        #TODO how to send a select automation untouch event trough OSC???
-        #liblo.send(self.target, "/select/XXXXXXX", 0)
+        # TODO enable touch automation when available in Ardour
+        # liblo.send(self.target, "/select/pan_stereo_position/touch", 0)
         return True
 
     def pan_width_single_mode_changed(self, event, value):
+        # TODO enable touch automation when available in Ardour
+        # liblo.send(self.target, "/select/pan_stereo_width/touch", 1)
         liblo.send(self.target, "/select/pan_stereo_width", value)
         return True
 
     def pan_width_single_mode_untouched(self, event):
-        #TODO how to send a select automation untouch event trough OSC???
-        #liblo.send(self.target, "/select/XXXXXXX", 0)
+        # TODO enable touch automation when available in Ardour
+        # liblo.send(self.target, "/select/pan_stereo_width/touch", 0)
         return True
 
     def send_single_mode_changed(self, event, channel, value):
         if self.sends_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.eSendsCtl[channel].get_sendID()
             if selSSID is not None:
-                #liblo.send(self.target, "/select/send/touch", selSSID, 1) #TODO how to send touch in sends?
+                # TODO enable touch automation when available in Ardour
+                #liblo.send(self.target, "/select/send/touch", selSSID, 1)
                 liblo.send(self.target, "/select/send_fader", selSSID, value)
+            else:
+                #Restore fader to zero
+                self.faderCtl.move_single_send(channel, 0.0)
         return True
 
     def send_single_mode_untouched(self, event, channel):
-        #TODO how to send a select automation untouch event trough OSC???
-        #liblo.send(self.target, "/select/XXXXXXX", 0)
+        selSSID = self.eSendsCtl[channel].get_sendID()
+        # TODO enable touch automation when available in Ardour
+        #if selSSID is not None:
+            #liblo.send(self.target, "/select/send/touch", selSSID, 0)
         return True
 
     def strip_select_changed(self, widget, issid):
@@ -404,10 +446,6 @@ class ControllerGUI(Gtk.Window):
             self.faderCtl.move_single_pan_width(1.0) #set fader width at center
         liblo.send(self.target, "/strip/select", ssid, 1)
 
-    # Debug method to insert a line of ##### in terminal
-    def dbg_insert_marker_line(self, widget, data=None):
-        print("##################################################")
-
     def __init__(self):
         Gtk.Window.__init__(self, title="OSC Controller")
         # Reding config data from config.xml
@@ -449,33 +487,112 @@ class ControllerGUI(Gtk.Window):
         self.vbox_top = Gtk.VBox()
 
         # Build the header bar
-        self.btn_test = Gtk.Button.new_with_label("Test!")  # TODO, debug button 2 remove
-        self.btn_insert_marker_at_terminal = Gtk.Button.new_with_label("Dbg: insert ###")  # TODO, debug button 2 remove
+        self.headerBar = Gtk.HeaderBar()
+        self.headerBar.set_show_close_button(False)
+        self.set_titlebar(self.headerBar)
+        self.ImgLogo = Gtk.Image.new_from_file("icons/sapaudio_logo.png")
+        self.headerBar.set_custom_title(self.ImgLogo)
 
-        self.btn_refresh = Gtk.Button()
-        self.btn_refresh.set_image(Gtk.Image.new_from_file("icons/reload_32.png"))
+        #Edit Mode buttons
+        self.btn_smart_mode = Gtk.Button.new_with_label("")
+        self.btn_smart_mode.get_child().set_markup("<span weight='bold' size='large' color='white'>Smart</span>")
+        self.btn_smart_mode.connect("clicked", self.btn_smart_mode_clicked)
+        self.headerBar.pack_start(self.btn_smart_mode)
 
+        self.btn_object_mode = Gtk.Button()
+        self.btn_object_mode.set_image(Gtk.Image.new_from_file("icons/object_mode.png"))
+        self.btn_object_mode.connect("clicked", self.btn_object_mode_clicked)
+        self.headerBar.pack_start(self.btn_object_mode)
+
+        self.btn_range_mode = Gtk.Button()
+        self.btn_range_mode.set_image(Gtk.Image.new_from_file("icons/range_mode.png"))
+        self.btn_range_mode.connect("clicked", self.btn_range_mode_clicked)
+        self.headerBar.pack_start(self.btn_range_mode)
+
+        self.btn_cut_mode = Gtk.Button()
+        self.btn_cut_mode.set_image(Gtk.Image.new_from_file("icons/cut_mode.png"))
+        self.btn_cut_mode.connect("clicked", self.btn_cut_mode_clicked)
+        self.headerBar.pack_start(self.btn_cut_mode)
+
+        self.btn_audition_mode = Gtk.Button()
+        self.btn_audition_mode.set_image(Gtk.Image.new_from_file("icons/audition_mode.png"))
+        self.btn_audition_mode.connect("clicked", self.btn_audition_mode_clicked)
+        self.headerBar.pack_start(self.btn_audition_mode)
+
+        self.btn_timefx_mode = Gtk.Button()
+        self.btn_timefx_mode.set_image(Gtk.Image.new_from_file("icons/timefx_mode.png"))
+        self.btn_timefx_mode.connect("clicked", self.btn_timefx_mode_clicked)
+        self.headerBar.pack_start(self.btn_timefx_mode)
+
+        self.btn_draw_mode = Gtk.Button()
+        self.btn_draw_mode.set_image(Gtk.Image.new_from_file("icons/draw_mode.png"))
+        self.btn_draw_mode.connect("clicked", self.btn_draw_mode_clicked)
+        self.headerBar.pack_start(self.btn_draw_mode)
+
+        self.btn_content_mode = Gtk.Button()
+        self.btn_content_mode.set_image(Gtk.Image.new_from_file("icons/contenttool_mode.png"))
+        self.btn_content_mode.connect("clicked", self.btn_content_mode_clicked)
+        self.headerBar.pack_start(self.btn_content_mode)
+
+        #Close button
+        self.btn_close = Gtk.Button()
+        self.btn_close.set_image(Gtk.Image.new_from_file("icons/close_small.png"))
+        self.btn_close.connect("clicked", self.btn_close_clicked)
+        self.headerBar.pack_end(self.btn_close)
+
+        #Loop button
         self.btn_loop = Gtk.Button()
         self.btn_loop_WhiteIcon = Gtk.Image.new_from_file("icons/loopWhite.png")
         self.btn_loop_GreenIcon = Gtk.Image.new_from_file("icons/loopGreen.png")
         self.btn_loop.set_image(self.btn_loop_WhiteIcon)
+        self.btn_loop.connect("clicked", self.btn_loop_clicked)
+        self.headerBar.pack_end(self.btn_loop)
 
+        #Play button
         self.btn_playpause = Gtk.Button()
         self.btn_playpause_WhiteIcon = Gtk.Image.new_from_file("icons/play_pauseWhite.png")
         self.btn_playpause_GreenIcon = Gtk.Image.new_from_file("icons/play_pauseGreen.png")
         self.btn_playpause.set_image(self.btn_playpause_WhiteIcon)
-        # 5fa358ff aket es el color en estat d play
-
-        self.headerBar = Gtk.HeaderBar()
-        self.headerBar.set_title("SAPTouch")
-        self.headerBar.set_subtitle("Ardour control surface")
-        self.headerBar.set_show_close_button(True)
-        self.set_titlebar(self.headerBar)
-        self.headerBar.pack_start(self.btn_refresh)
-        self.headerBar.pack_start(self.btn_test)
-        self.headerBar.pack_start(self.btn_insert_marker_at_terminal)
-        self.headerBar.pack_end(self.btn_loop)
+        self.btn_playpause.connect("clicked", self.btn_playStop_clicked) # 5fa358ff  play state color
         self.headerBar.pack_end(self.btn_playpause)
+
+        #Metronome button
+        self.btn_metronome = Gtk.Button()
+        self.btn_metronome.set_image(Gtk.Image.new_from_file("icons/metronome.png"))
+        self.btn_metronome.connect("clicked", self.btn_metronome_clicked)
+        self.headerBar.pack_end(self.btn_metronome)
+
+        #SOLO cancel button
+        self.btn_solo_cancel = Gtk.Button.new_with_label("")
+        self.btn_solo_cancel.get_child().set_markup("<span weight='bold' size='medium' color='#52824e'>Cancel\nSOLO</span>")
+        self.btn_solo_cancel.get_child().set_justify(Gtk.Justification.CENTER)
+        self.btn_solo_cancel.connect("clicked", self.btn_solo_cancel_clicked)
+        self.headerBar.pack_end(self.btn_solo_cancel)
+
+        # Jog-Wheel mode selector
+        self.CB_JogWheel_mode = Gtk.ComboBoxText()
+        self.CB_JogWheel_mode.append_text("Jog")
+        self.CB_JogWheel_mode.append_text("Scrub")
+        self.CB_JogWheel_mode.append_text("Zoom")
+        self.CB_JogWheel_mode.append_text("R.Gain")
+        self.CB_JogWheel_mode.set_active(0)
+        self.headerBar.pack_end(self.CB_JogWheel_mode)
+        lbl_wheelMode = Gtk.Label()
+        lbl_wheelMode.set_markup("<span size='medium' color='white'>Wheel\nmode:</span>")
+        self.headerBar.pack_end(lbl_wheelMode)
+        # TODO connect combo signals and set Ardour encoder state
+
+        # Session save button
+        self.btn_session_save = Gtk.Button()
+        self.btn_session_save.set_image(Gtk.Image.new_from_file("icons/save_icon.png"))
+        self.btn_session_save.connect("clicked", self.btn_session_save_clicked)
+        self.headerBar.pack_end(self.btn_session_save)
+
+        # Refresh button
+        self.btn_refresh = Gtk.Button()
+        self.btn_refresh.set_image(Gtk.Image.new_from_file("icons/reload_32.png"))
+        self.btn_refresh.connect("clicked", self.refresh_strip_list)
+        self.headerBar.pack_end(self.btn_refresh)
 
         # Global bool to store loop state
         self.bLooping = False
@@ -537,12 +654,6 @@ class ControllerGUI(Gtk.Window):
         # Refine intial bank widgets state
         for i in range(0, 8):
             self.strips_list_selbank[i].set_strip_type(stripselwidget.StripEnum.Empty)
-
-        self.btn_test.connect("clicked", self.btn_test_clicked)  # TODO DBG button to rmeove
-        self.btn_insert_marker_at_terminal.connect("clicked", self.dbg_insert_marker_line)  # TODO DBG button to rmeove
-        self.btn_refresh.connect("clicked", self.refresh_strip_list)
-        self.btn_playpause.connect("clicked", self.btn_playStop_clicked)
-        self.btn_loop.connect("clicked", self.btn_loop_clicked)
 
         self.connect("destroy", self.destroy)
         self.connect("delete_event", self.delete_event)
@@ -716,7 +827,7 @@ class ControllerGUI(Gtk.Window):
         self.eSendsCtl = []
         for i in range(0, 4):
             self.eSendsCtl.append(selectFaderCtlWidget.SelectFaderCtlWidget(str(i), isSend = True))
-            #TODO connect signals! Automation state
+            #TODO connect signals for automation state
             self.eSendsCtl[i].connect("send_active_changed", self.edit_send_active_changed)
             self.table_bank_edit.attach(self.eSendsCtl[i], 4 + i, 0, 1, 1)
 
@@ -789,17 +900,3 @@ print(__name__)
 if __name__ == "__main__":
     base = ControllerGUI()
     base.main()
-
-# TODO accions interssants a afegir al OSC
-# /access_action/Common/toggle-editor-and-mixer #conumta entre mesclador/editor moooola
-# /access_action/Editor/set-playhead #mou el playhead al mouse!
-# /access_action/Editor/snap-off
-# /access_action/Editor/snap-normal
-# /access_action/Editor/snap-magnetic
-# /undo #Ctrl-Z yes!
-# /redo #Ctrl-Z yes!
-# /save_state es equivalent a control+s o session>>save
-# /jog i /jog_mode 0 per control del jog-wheel, ajuda a moure el curspr amb un encoder
-# /access_action/Region/toggle-region-lock # lock and unlocks currently selected region
-# /access_action/Editor/split-region #Split the selected region, identic a S
-

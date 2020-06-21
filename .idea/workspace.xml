@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="Strip selection widgets optimization and encapsulation">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="Sends implementation complete">
+      <change afterPath="$PROJECT_DIR$/icons/SAPAudio_Logo.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/audition_mode.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/close_small.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/contenttool_mode.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/cut_mode.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/draw_mode.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/metronome.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/object_mode.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/range_mode.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/sapaudio_logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/save_icon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/save_icon.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/icons/timefx_mode.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO" beforeDir="false" afterPath="$PROJECT_DIR$/TODO" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,7 +181,14 @@
       <option name="project" value="LOCAL" />
       <updated>1592410393416</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Sends implementation complete">
+      <created>1592503887332</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1592503887332</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -184,7 +201,8 @@
     <MESSAGE value="Edit mode completed trim, fader and panner but I think there are some bugs in Ardour 6.0..." />
     <MESSAGE value="Bug fix for the edit mode" />
     <MESSAGE value="Strip selection widgets optimization and encapsulation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Strip selection widgets optimization and encapsulation" />
+    <MESSAGE value="Sends implementation complete" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sends implementation complete" />
   </component>
   <component name="WindowStateProjectService">
     <state x="2339" y="183" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1590670570916">
@@ -195,10 +213,10 @@
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="2598" y="329" key="#com.intellij.fileTypes.FileTypeChooser/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592064419579" />
-    <state x="2502" y="78" width="1177" height="907" key="CommitChangelistDialog2" timestamp="1592410393353">
+    <state x="2502" y="78" width="1177" height="907" key="CommitChangelistDialog2" timestamp="1592503887267">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state x="2502" y="78" width="1177" height="907" key="CommitChangelistDialog2/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592410393353" />
+    <state x="2502" y="78" width="1177" height="907" key="CommitChangelistDialog2/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503887267" />
     <state width="430" height="485" key="DebuggerActiveHint" timestamp="1591810955349">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
@@ -207,46 +225,46 @@
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="2663" y="283" key="FileChooserDialogImpl/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1590669205604" />
-    <state width="1897" height="137" key="GridCell.Tab.0.bottom" timestamp="1592503602712">
+    <state width="1897" height="213" key="GridCell.Tab.0.bottom" timestamp="1592736634487">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="137" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503602712" />
-    <state width="1897" height="137" key="GridCell.Tab.0.center" timestamp="1592503602712">
+    <state width="1897" height="213" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592736634487" />
+    <state width="1897" height="213" key="GridCell.Tab.0.center" timestamp="1592736634487">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="137" key="GridCell.Tab.0.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503602712" />
-    <state width="1897" height="137" key="GridCell.Tab.0.left" timestamp="1592503602711">
+    <state width="1897" height="213" key="GridCell.Tab.0.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592736634487" />
+    <state width="1897" height="213" key="GridCell.Tab.0.left" timestamp="1592736634487">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="137" key="GridCell.Tab.0.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503602711" />
-    <state width="1897" height="137" key="GridCell.Tab.0.right" timestamp="1592503602712">
+    <state width="1897" height="213" key="GridCell.Tab.0.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592736634487" />
+    <state width="1897" height="213" key="GridCell.Tab.0.right" timestamp="1592736634487">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="137" key="GridCell.Tab.0.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503602712" />
-    <state width="1897" height="207" key="GridCell.Tab.1.bottom" timestamp="1592503318574">
+    <state width="1897" height="213" key="GridCell.Tab.0.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592736634487" />
+    <state width="1897" height="207" key="GridCell.Tab.1.bottom" timestamp="1592726693790">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503318574" />
-    <state width="1897" height="207" key="GridCell.Tab.1.center" timestamp="1592503318574">
+    <state width="1897" height="207" key="GridCell.Tab.1.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592726693790" />
+    <state width="1897" height="207" key="GridCell.Tab.1.center" timestamp="1592726693790">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503318574" />
-    <state width="1897" height="207" key="GridCell.Tab.1.left" timestamp="1592503318573">
+    <state width="1897" height="207" key="GridCell.Tab.1.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592726693790" />
+    <state width="1897" height="207" key="GridCell.Tab.1.left" timestamp="1592726693790">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503318573" />
-    <state width="1897" height="207" key="GridCell.Tab.1.right" timestamp="1592503318574">
+    <state width="1897" height="207" key="GridCell.Tab.1.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592726693790" />
+    <state width="1897" height="207" key="GridCell.Tab.1.right" timestamp="1592726693790">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503318574" />
+    <state width="1897" height="207" key="GridCell.Tab.1.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592726693790" />
     <state x="2385" y="160" key="SettingsEditor" timestamp="1590732749162">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="2385" y="160" key="SettingsEditor/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1590732749162" />
-    <state x="2476" y="261" key="Vcs.Push.Dialog.v2" timestamp="1592410395367">
+    <state x="2476" y="261" key="Vcs.Push.Dialog.v2" timestamp="1592503889511">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state x="2476" y="261" key="Vcs.Push.Dialog.v2/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592410395367" />
+    <state x="2476" y="261" key="Vcs.Push.Dialog.v2/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592503889511" />
     <state x="2531" y="143" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1592119497347">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
