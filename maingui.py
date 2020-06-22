@@ -94,6 +94,26 @@ class ControllerGUI(Gtk.Window):
         else:
             self.bLooping = True
 
+    def on_encoder_incremented(self, event, value):
+        jog_mode = self.CB_JogWheel_mode.get_active_text()
+        if jog_mode == "Jog":
+            liblo.send(self.target, "/jog/mode", 0)
+            liblo.send(self.target, "/jog", value*0.2)
+        elif jog_mode == "Scrub":
+            liblo.send(self.target, "/jog/mode", 2)
+            liblo.send(self.target, "/jog", value*0.1)
+        elif jog_mode == "Scroll":
+            liblo.send(self.target, "/jog/mode", 5)
+            if value > 0:
+                liblo.send(self.target, "/jog", 1)
+            else:
+                liblo.send(self.target, "/jog", -1)
+        elif jog_mode == "R.Gain":
+            if value > 0:
+                liblo.send(self.target, "/access_action/Region/boost-region-gain")
+            else:
+                liblo.send(self.target, "/access_action/Region/cut-region-gain")
+
     def fader_bank_mode_changed(self, event, channel, value):
         if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.strips_list_selbank[channel].get_ssid()
@@ -573,14 +593,13 @@ class ControllerGUI(Gtk.Window):
         self.CB_JogWheel_mode = Gtk.ComboBoxText()
         self.CB_JogWheel_mode.append_text("Jog")
         self.CB_JogWheel_mode.append_text("Scrub")
-        self.CB_JogWheel_mode.append_text("Zoom")
+        self.CB_JogWheel_mode.append_text("Scroll")
         self.CB_JogWheel_mode.append_text("R.Gain")
         self.CB_JogWheel_mode.set_active(0)
         self.headerBar.pack_end(self.CB_JogWheel_mode)
         lbl_wheelMode = Gtk.Label()
         lbl_wheelMode.set_markup("<span size='medium' color='white'>Wheel\nmode:</span>")
         self.headerBar.pack_end(lbl_wheelMode)
-        # TODO connect combo signals and set Ardour encoder state
 
         # Session save button
         self.btn_session_save = Gtk.Button()
@@ -638,6 +657,7 @@ class ControllerGUI(Gtk.Window):
 
         # Adding the AVR serial control object
         self.faderCtl = bankAvrController.BankAvrController(serial_port, baudrate, FADER_MIN, FADER_MAX)
+        self.faderCtl.connect("encoder_increment", self.on_encoder_incremented)
         self.faderCtl.connect("fader_bank_mode_changed", self.fader_bank_mode_changed)
         self.faderCtl.connect("fader_bank_mode_untouched", self.fader_bank_mode_untouched)
         self.faderCtl.connect("trim_single_mode_changed", self.trim_single_mode_changed)

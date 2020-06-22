@@ -14,6 +14,9 @@ class FaderBankState(Enum):
 class BankAvrController(GObject.GObject):
 
     __gsignals__ = {
+        'encoder_increment': (GObject.SIGNAL_RUN_FIRST, None,
+                                    (float, )),  #  value
+
         'fader_bank_mode_changed': (GObject.SIGNAL_RUN_FIRST, None,
                              (int, float)),  # channel, value
 
@@ -63,6 +66,10 @@ class BankAvrController(GObject.GObject):
         self.avrCOM = pyFaderSerialCOM.FaderCOM(port, baudrate, fader_min, fader_max)
         self.avrCOM.connect("fader_changed", self.on_fader_moved)
         self.avrCOM.connect("fader_untouched", self.on_fader_untouched)
+        self.avrCOM.connect("encoder_changed", self.on_encoder_changed)
+
+    def on_encoder_changed(self, event, value):
+        self.emit('encoder_increment', value)
 
     def on_fader_moved(self, event, channel, value):
         if self.state == FaderBankState.EIGHT_CHANNELS_FADERS:

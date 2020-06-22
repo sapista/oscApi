@@ -13,7 +13,7 @@ class FaderCOM(GObject.GObject):
                              (int, float)),  # channel, value
 
         'encoder_changed': (GObject.SIGNAL_RUN_FIRST, None,
-                          (int, float)),  # channel, value
+                          (float,)),  # value
 
         'fader_untouched': (GObject.SIGNAL_RUN_FIRST, None,
                                 (int,)),  # value
@@ -111,9 +111,9 @@ class FaderCOM(GObject.GObject):
         else:
             if self.RX_packet[0] & 0x20:
                 # we got an encoder message
-                channel = int((self.RX_packet[0] & 0x0E) >> 1);
-                value = int(self.RX_packet[1] & 0x7F) | int((self.RX_packet[0] & 0x01) << 7);
-                GLib.idle_add(self.emit, 'encoder_changed', channel, float(value)/1023.0) #Emit with to float conversion
+                value = int(self.RX_packet[1] & 0x7F) | int((self.RX_packet[0] & 0x1) << 7);
+                value = int.from_bytes(value.to_bytes(1, byteorder='big', signed=False), byteorder='big', signed=True)
+                GLib.idle_add(self.emit, 'encoder_changed', float(value)) #Emit with to float conversion
             else:
                 # we got a untouch/buttons/Leds message
                 value = int(self.RX_packet[1] & 0x7F) | int((self.RX_packet[0] & 0x01) << 7);
