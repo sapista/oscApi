@@ -120,7 +120,7 @@ class BankAvrController(GObject.GObject):
                 self.avrCOM.moveFader(i, self.faders_pos[i])
 
         elif state == FaderBankState.SINGLE_CHANNEL_EDIT:
-            self.avrCOM.moveFader(0, self.trim_edit_pos)
+            self.avrCOM.moveFader(0, 0.025 * self.trim_edit_pos  + 0.5) #Converting it from -20 to 20 dB range to 0 to 1
             self.avrCOM.moveFader(1, self.fader_edit_pos)
             self.avrCOM.moveFader(2, self.pan_edit_pos)
             self.avrCOM.moveFader(3, self.pan_edit_width)

@@ -19,7 +19,7 @@ Keyboard Shift
 /access_action/Region/toggle-region-lock #lock and unlocks currently selected region
 /access_action/Editor/split-region #Split the selected region, identical as S
 
-/add_marker #Adds marker to the current transport position
+/add_marker #Adds marker to the current transport position, use the encoder push button to drop a marker (only if jog mode?)
 /next_marker  #Move playhead to next marker
 /prev_marker  #Move playhead to previous marker
 /goto_start #Move playhead to start of session
